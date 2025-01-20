@@ -56,6 +56,10 @@ var newNote = &cobra.Command{
 // For now, it will be saved as /User/[Username]/notes
 
 // HELPER FUNCTIONS
+
+// confirmUserHomeDirectory retrieves the user's home directory path from the operating system.
+// It returns the absolute path to the user's home directory as a string and any error encountered.
+// If the home directory cannot be determined, it returns an empty string and a descriptive error.
 func confirmUserHomeDirectory() (string, error) {
 	userHomeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -64,6 +68,10 @@ func confirmUserHomeDirectory() (string, error) {
 	return userHomeDir, nil
 }
 
+// createNotesDirectory creates a directory for storing notes in the user's home directory.
+// It takes the user's home directory path as input and returns the full path to the created notes directory.
+// If creation fails, it returns an empty string and an error describing what went wrong.
+// The directory is created with permissions specified by dirPermissions constant.
 func createNotesDirectory(userHomeDir string) (string, error) {
 	var notesDir = "/notes"
 
@@ -93,7 +101,7 @@ func createAndSaveNote(notesDirPath, noteName string) error {
 	notePath := filepath.Join(notesDirPath, fullNoteName) 
 
 	// Check if note already exist (do not overwrite)
-	if _, err := os.Stat(fullNoteName); err == nil {
+	if _, err := os.Stat(notePath); err == nil {
 		return fmt.Errorf("note %s already exists", noteName)
 	}
 
