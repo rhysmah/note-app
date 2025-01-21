@@ -12,6 +12,7 @@ import (
 // 7 means read, write, execute for owner
 // 5 means read and execture for group and others, respectively
 const dirPermissions int = 0755
+const defaultNotesDir string = "/notes"
 
 func init() {
 	rootCmd.AddCommand(newNote)
@@ -52,8 +53,10 @@ var newNote = &cobra.Command{
 	},
 }
 
-// TODO: Allow user to select location of notes directory
-// For now, it will be saved as /User/[Username]/notes
+// TODO: 
+// > Allow user to select location of notes directory. Default: saved as /User/[Username]/notes
+// > Check that file name is appropriate / won't cause problems.
+// > Add datetime stamp automatically to file name
 
 // HELPER FUNCTIONS
 
@@ -73,9 +76,7 @@ func confirmUserHomeDirectory() (string, error) {
 // If creation fails, it returns an empty string and an error describing what went wrong.
 // The directory is created with permissions specified by dirPermissions constant.
 func createNotesDirectory(userHomeDir string) (string, error) {
-	var notesDir = "/notes"
-
-	notesDirPath := filepath.Join(userHomeDir, notesDir)
+	notesDirPath := filepath.Join(userHomeDir, defaultNotesDir)
 
 	err := os.MkdirAll(notesDirPath, os.FileMode(dirPermissions))
 	if err != nil {
@@ -112,6 +113,6 @@ func createAndSaveNote(notesDirPath, noteName string) error {
 	}
 	defer file.Close()
 
-	fmt.Printf("Note was created at %s", notePath)
+	fmt.Printf("Note was created at %s\n", notePath)
 	return nil
 }
