@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -13,6 +14,8 @@ import (
 // 5 means read and execture for group and others, respectively
 const dirPermissions int = 0755
 const defaultNotesDir string = "/notes"
+const illegalChars string = "\\/:*?\"<>|:."
+const noteNameCharLimit = 50
 
 func init() {
 	rootCmd.AddCommand(newNote)
@@ -31,6 +34,12 @@ var newNote = &cobra.Command{
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
+		err := validateNoteName(args[0])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		
 		userHomeDir, err := confirmUserHomeDirectory()
 		if err != nil {
 			fmt.Println(err)
@@ -107,3 +116,41 @@ func createAndSaveNote(notesDirPath, noteName string) error {
 	fmt.Printf("Note successfully created at %s\n", notePath)
 	return nil
 }
+
+// validateNoteName checks if the provided note name meets the required criteria.
+// It verifies that:
+// - The note name does not exceed the character limit
+// - The note name does not begin or end with whitespace
+// - The note name does not contain any illegal characters (., \, /, :, *, ?, ", <, >, |)
+//
+// Parameters:
+//   - noteName: string to be validated
+//
+// Returns:
+//   - error: nil if validation passes, error with description if validation fails
+func validateNoteName(noteName string) error {
+	if len(noteName) > noteNameCharLimit {
+		return fmt.Errorf("note name cannot exceed %d characters", noteNameCharLimit)
+	}
+
+	// Note cannot start or end with whitespace
+	if strings.TrimSpace(noteName) != noteName {
+		return fmt.Errorf("note name cannot begin or end with spaces")
+	}
+	
+	// Note cannot contain illegal characters
+	var illegalCharsFound []rune
+	for _, r := range noteName {
+		if strings.ContainsRune(illegalChars, r) {
+			illegalCharsFound = append(illegalCharsFound, r)
+		}
+	}
+	
+	if len(illegalCharsFound) > 0 {
+		return fmt.Errorf("note name contains illegal character(s): \"%s\"", string(illegalCharsFound))
+	}
+
+	return nil
+}
+
+
