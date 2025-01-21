@@ -22,12 +22,14 @@ var newNote = &cobra.Command{
 	Use: "create",
 	Short: "Create a new note",
 	Long: "Create a new note inside the [] directory with the name [note-name]_[date].txt",
+
 	Args: func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
 			return fmt.Errorf("you must specify a name when creating a note")
 		} 
-		return nil // One argument was (correctly) given
+		return nil
 	},
+
 	Run: func(cmd *cobra.Command, args []string) {
 		userHomeDir, err := confirmUserHomeDirectory()
 		if err != nil {
@@ -92,7 +94,7 @@ func createAndSaveNote(notesDirPath, noteName string) error {
 
 	// Check if note already exist (do not overwrite)
 	if _, err := os.Stat(notePath); err == nil {
-		return fmt.Errorf("note %s already exists", noteName)
+		return fmt.Errorf("%s already exists", noteName)
 	}
 
 	// Create new note if it does not exist
@@ -102,6 +104,6 @@ func createAndSaveNote(notesDirPath, noteName string) error {
 	}
 	defer file.Close()
 
-	fmt.Printf("Note was created at %s\n", notePath)
+	fmt.Printf("Note successfully created at %s\n", notePath)
 	return nil
 }
