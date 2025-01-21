@@ -22,15 +22,11 @@ var newNote = &cobra.Command{
 	Use: "create",
 	Short: "Create a new note",
 	Long: "Create a new note inside the [] directory with the name [note-name]_[date].txt",
-
-	// `*cobra.Command` is a pointer to the command being executed.
-	// `args` are the additional arguments being passed with the command
-	// cobra.ExactArgs(1) is a function that returns a function
 	Args: func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
 			return fmt.Errorf("you must specify a name when creating a note")
 		} 
-		return nil // One argument, the name of the note, was provided.
+		return nil // One argument was (correctly) given
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		userHomeDir, err := confirmUserHomeDirectory()
@@ -38,13 +34,11 @@ var newNote = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		
 		notesDir, err := createNotesDirectory(userHomeDir)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-
 		err = createAndSaveNote(notesDir, args[0])
 		if err != nil {
 			fmt.Println(err)
@@ -52,11 +46,6 @@ var newNote = &cobra.Command{
 		}
 	},
 }
-
-// TODO: 
-// > Allow user to select location of notes directory. Default: saved as /User/[Username]/notes
-// > Check that file name is appropriate / won't cause problems.
-// > Add datetime stamp automatically to file name
 
 // HELPER FUNCTIONS
 
