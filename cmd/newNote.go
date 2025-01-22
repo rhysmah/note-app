@@ -86,17 +86,17 @@ func createNotesDirectory(userHomeDir string) (string, error) {
 	return notesDirPath, nil
 }
 
-// createAndSaveNote creates a new text file with the given name in the specified directory.
-// It takes two parameters:
-//   - notesDirPath: the directory path where the note should be created
-//   - noteName: the name of the note (without .txt extension)
+// createAndSaveNote creates a new text file with the given name and current timestamp
+// in the specified directory. The file name format is: noteName_YYYY_MM_DD_HH_mm.txt
 //
-// The function will append ".txt" to the note name automatically.
-// It returns an error if:
-//   - a note with the same name already exists
-//   - there are problems creating the file
+// Parameters:
+//   - notesDirPath: the directory path where the note will be saved
+//   - noteName: the base name for the note (without extension)
 //
-// On success, it prints the path where the note was created and returns nil.
+// Returns:
+//   - error: nil if successful, otherwise returns an error if:
+//     * the note already exists
+//     * there are problems creating the file
 func createAndSaveNote(notesDirPath, noteName string) error {
 	
 	fullNoteName := noteName + "_" + time.Now().Format("2006_01_02_15_04") + ".txt"
@@ -133,13 +133,11 @@ func validateNoteName(noteName string) error {
 	if len(noteName) > noteNameCharLimit {
 		return fmt.Errorf("note name cannot exceed %d characters", noteNameCharLimit)
 	}
-
-	// Note cannot start or end with whitespace
+	
 	if strings.TrimSpace(noteName) != noteName {
 		return fmt.Errorf("note name cannot begin or end with spaces")
 	}
 	
-	// Note cannot contain illegal characters
 	var illegalCharsFound []rune
 	for _, r := range noteName {
 		if strings.ContainsRune(illegalChars, r) {
@@ -153,5 +151,3 @@ func validateNoteName(noteName string) error {
 
 	return nil
 }
-
-
