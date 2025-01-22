@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -98,22 +99,22 @@ func createNotesDirectory(userHomeDir string) (string, error) {
 // On success, it prints the path where the note was created and returns nil.
 func createAndSaveNote(notesDirPath, noteName string) error {
 	
-	fullNoteName := noteName + ".txt"
-	notePath := filepath.Join(notesDirPath, fullNoteName) 
+	fullNoteName := noteName + "_" + time.Now().Format("2006_01_02_15_04") + ".txt"
+	notePathFinal := filepath.Join(notesDirPath, fullNoteName)
 
 	// Check if note already exist (do not overwrite)
-	if _, err := os.Stat(notePath); err == nil {
+	if _, err := os.Stat(notePathFinal); err == nil {
 		return fmt.Errorf("%s already exists", noteName)
 	}
 
 	// Create new note if it does not exist
-	file, err := os.Create(notePath)
+	file, err := os.Create(notePathFinal)
 	if err != nil {
 		return fmt.Errorf("problem creating note: %v", err)
 	}
 	defer file.Close()
 
-	fmt.Printf("Note successfully created at %s\n", notePath)
+	fmt.Printf("Note successfully created at %s\n", notePathFinal)
 	return nil
 }
 
