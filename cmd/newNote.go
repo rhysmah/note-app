@@ -12,12 +12,16 @@ import (
 
 // Octal, as indiciated by 0.
 // 7 means read, write, execute for owner
-// 5 means read and execture for group and others, respectively
+// 5 means read and execute for group and others, respectively
 const dirPermissions int = 0755
 const defaultNotesDir string = "/notes"
 const illegalChars string = "\\/:*?\"<>|:."
 const noteNameCharLimit = 50
 
+
+// init initializes the command structure by adding the newNote command
+// as a subcommand to the root command. This function is automatically
+// called during package initialization.
 func init() {
 	rootCmd.AddCommand(newNote)
 }
@@ -40,17 +44,19 @@ var newNote = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		
+
 		userHomeDir, err := confirmUserHomeDirectory()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+
 		notesDir, err := createNotesDirectory(userHomeDir)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+		
 		err = createAndSaveNote(notesDir, args[0])
 		if err != nil {
 			fmt.Println(err)
@@ -99,6 +105,7 @@ func createNotesDirectory(userHomeDir string) (string, error) {
 //     * there are problems creating the file
 func createAndSaveNote(notesDirPath, noteName string) error {
 	
+	// Time format is "YYYY_MM_DD_HH_MM"
 	fullNoteName := noteName + "_" + time.Now().Format("2006_01_02_15_04") + ".txt"
 	notePathFinal := filepath.Join(notesDirPath, fullNoteName)
 
