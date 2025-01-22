@@ -1,3 +1,5 @@
+// Package cmd provides command-line functionality for managing notes,
+// including creation and organization of text files in a specified directory.s
 package cmd
 
 import (
@@ -10,14 +12,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Octal, as indiciated by 0.
-// 7 means read, write, execute for owner
-// 5 means read and execute for group and others, respectively
-const dirPermissions int = 0755
-const defaultNotesDir string = "/notes"
-const illegalChars string = "\\/:*?\"<>|:."
-const noteNameCharLimit = 50
-
+const (
+	// Octal, as indiciated by 0.
+	// 7 means read, write, execute for owner
+	// 5 means read and execute for group and others, respectively
+	dirPermissions int = 0755
+	defaultNotesDir string = "/notes"
+	illegalChars string = "\\/:*?\"<>|:."
+	noteNameCharLimit = 50
+)
 
 // init initializes the command structure by adding the newNote command
 // as a subcommand to the root command. This function is automatically
@@ -29,7 +32,9 @@ func init() {
 var newNote = &cobra.Command{
 	Use: "create",
 	Short: "Create a new note",
-	Long: "Create a new note inside the [] directory with the name [note-name]_[date].txt",
+	Long: `Create a new note with the specified name.
+The note will be saved as '[note-name]_[date].txt' in your notes directory.
+Note names cannot contain special characters or exceed 50 characters.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
@@ -56,7 +61,7 @@ var newNote = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		
+
 		err = createAndSaveNote(notesDir, args[0])
 		if err != nil {
 			fmt.Println(err)
@@ -145,6 +150,7 @@ func validateNoteName(noteName string) error {
 		return fmt.Errorf("note name cannot begin or end with spaces")
 	}
 	
+	// Collects all illegal characters found in note name for user display
 	var illegalCharsFound []rune
 	for _, r := range noteName {
 		if strings.ContainsRune(illegalChars, r) {
