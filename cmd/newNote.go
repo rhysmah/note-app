@@ -76,6 +76,7 @@ Note names cannot contain special characters or exceed 50 characters.`,
 // It returns the absolute path to the user's home directory as a string and any error encountered.
 // If the home directory cannot be determined, it returns an empty string and a descriptive error.
 func confirmUserHomeDirectory() (string, error) {
+
 	userHomeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("couldn't find user's home directory: %v", err)
