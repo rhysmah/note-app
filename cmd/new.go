@@ -20,7 +20,7 @@ const (
 	dirPermissions    int    = 0755
 	defaultNotesDir   string = "/notes"
 	illegalChars      string = "\\/:*?\"<>|:."
-	noteNameCharLimit        = 50
+	noteNameCharLimit int    = 50
 )
 
 var appLogger *logger.Logger
@@ -29,10 +29,10 @@ var appLogger *logger.Logger
 // as a subcommand to the root command. This function is automatically
 // called during package initialization.
 func init() {
-	rootCmd.AddCommand(newNote)
+	rootCmd.AddCommand(new)
 }
 
-var newNote = &cobra.Command{
+var new = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new note",
 	Long: `Create a new note with the specified name.
