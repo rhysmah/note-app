@@ -48,7 +48,7 @@ func (l *Logger) Log(message string) error {
 	}
 
 	messageTimeStamp := time.Now().Format("2006-01-02 15:04:05")
-	logEntry := fmt.Sprintf("[%s] %s\n", message, messageTimeStamp)
+	logEntry := fmt.Sprintf("[%s] %s\n", messageTimeStamp, message)
 
 	_, err := l.currentLogFile.WriteString(logEntry)
 	if err != nil {
