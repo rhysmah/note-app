@@ -20,3 +20,7 @@ out/
 .env
 .env.local
 .env.*.local
+
+# Log files
+note_app_*.txt
+note-app
