@@ -2,9 +2,9 @@ BINARY_NAME=note-app
 GOARCH=amd64
 VERSION?=0.1
 
-BINARY_UNIX=$(BINARY_NAME)-$(VERSION)-linux
-BINARY_OSX=$(BINARY_NAME)-$(VERSION)-darwin
-BINARY_WIN=$(BINARY_NAME)-$(VERSION)-windows.exe
+BINARY_OSX=$(BINARY_NAME)-dar
+BINARY_UNIX=$(BINARY_NAME)-lin
+BINARY_WIN=$(BINARY_NAME)-win.exe
 
 .DEFAULT_GOAL := build
 
@@ -25,4 +25,5 @@ build: vet
 	GOARCH=$(GOARCH) GOOS=linux go build -o $(BINARY_UNIX) main.go
 	GOARCH=$(GOARCH) GOOS=windows go build -o $(BINARY_WIN) main.go
 
+# Explicitly declares what are NOT files
 .PHONY: clean format vet build
