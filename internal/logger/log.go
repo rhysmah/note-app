@@ -105,7 +105,7 @@ func (l *Logger) setLoggerFile() error {
 
 	// Create new log file with timestamp
 	logTimeStamp := time.Now().Format("2006_01_02_15_04")
-	logFileName := filepath.Join(l.logDir, logFilePrefix + logTimeStamp + ".txt")
+	logFileName := filepath.Join(l.logDir, logFilePrefix+logTimeStamp+".txt")
 
 	// Create log file
 	logFile, err := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, logReadWritePerms)

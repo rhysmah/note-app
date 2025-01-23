@@ -49,7 +49,7 @@ Note names cannot contain special characters or exceed 50 characters.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		appLogger.Log(fmt.Sprintf("[START] Creating new note with name: '%s'", args[0]))
-		
+
 		err := validateNoteName(args[0])
 		if err != nil {
 			appLogger.Log(fmt.Sprintf("[ERROR] Name validation failed for '%s': %v", args[0], err))
