@@ -22,18 +22,18 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-            var err error
-            appLogger, err = logger.New()  // Assign to package-level variable
-            if err != nil {
-                fmt.Printf("Failed to initialize logger: %v\n", err)
-                os.Exit(1)
-            }
-        },
-        PersistentPostRun: func(cmd *cobra.Command, args []string) {
-            if appLogger != nil {
-                appLogger.Close()
-            }
-        },
+		var err error
+		appLogger, err = logger.New()
+		if err != nil {
+			fmt.Printf("Failed to initialize logger: %v\n", err)
+			os.Exit(1)
+		}
+	},
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		if appLogger != nil {
+			appLogger.Close()
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
