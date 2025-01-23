@@ -26,23 +26,43 @@ type Logger struct {
 // Returns a pointer to the Logger instance and any error encountered during initialization.
 // If an error occurs during directory creation or log file setup, it returns nil and the error.
 func New() (*Logger, error) {
-	// Create app, log dirs if they don't exist
-	logDir, err := createLogDirectory()
+
+	logger := &Logger{}
+
+	err := logger.createLogDirectory()
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create app directory: %w", err)
 	}
 
-	// Create logger instance and assign logDir
-	logger := &Logger{
-		logDir: logDir,
-	}
-
-	// Create intitial log file
 	if err := logger.setLoggerFile(); err != nil {
-		return nil, fmt.Errorf("error creating log file: %w", err)
+		return nil, fmt.Errorf("couldn't create log file: %w", err)
 	}
 
 	return logger, nil
+}
+
+func (l *Logger) Log(message string) error {
+
+	if l.currentLogFile == nil {
+		return fmt.Errorf("no log file is currently open")
+	}
+
+	messageTimeStamp := time.Now().Format("2006-01-02 15:04:05")
+	logEntry := fmt.Sprintf("[%s] %s\n", message, messageTimeStamp)
+
+	_, err := l.currentLogFile.WriteString(logEntry)
+	if err != nil {
+		return fmt.Errorf("error writing to log file %s: %w", l.currentLogFile.Name(), err)
+	}
+
+	return nil
+}
+
+func (l *Logger) Close() error {
+	if l.currentLogFile != nil {
+		return l.currentLogFile.Close()
+	}
+	return nil
 }
 
 // HELPERS
@@ -54,21 +74,21 @@ func New() (*Logger, error) {
 // Returns:
 //   - string: The absolute path to the created logs directory
 //   - error: An error if directory creation fails or if home directory cannot be determined
-func createLogDirectory() (string, error) {
+func (l *Logger) createLogDirectory() error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return "", fmt.Errorf("couldn't find user's home directory: %w", err)
+		return fmt.Errorf("couldn't find user's home directory: %w", err)
 	}
 
 	appFilePath := filepath.Join(homeDir, ".note-app")
 	logsFilePath := filepath.Join(appFilePath, "logs")
 
 	if err := os.MkdirAll(logsFilePath, ownerReadWritePerms); err != nil {
-		return "", fmt.Errorf("couldn't make app directory: %w", err)
+		return fmt.Errorf("couldn't make app directory: %w", err)
 	}
 
-	// logsFilePath will be the logDir in Logger struct
-	return logsFilePath, nil
+	l.logDir = logsFilePath
+	return nil
 }
 
 // setLoggerFile creates and sets up a new log file for the Logger.
@@ -85,7 +105,7 @@ func (l *Logger) setLoggerFile() error {
 
 	// Create new log file with timestamp
 	logTimeStamp := time.Now().Format("2006_01_02_15_04")
-	logFileName := logFilePrefix + logTimeStamp + ".txt"
+	logFileName := filepath.Join(l.logDir, logFilePrefix + logTimeStamp + ".txt")
 
 	// Create log file
 	logFile, err := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, logReadWritePerms)
@@ -94,5 +114,9 @@ func (l *Logger) setLoggerFile() error {
 	}
 
 	l.currentLogFile = logFile
+
+	if err := l.Log("Log file initialized"); err != nil {
+		return fmt.Errorf("failed to writing initial log entry: %w", err)
+	}
 	return nil
 }
