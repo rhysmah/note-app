@@ -26,7 +26,6 @@ const (
 var appLogger *logger.Logger
 
 // init initializes the command structure by adding the newNote command
-// init initializes the command structure by adding the newNote command
 // as a subcommand to the root command. This function is automatically
 // called during package initialization.
 func init() {
