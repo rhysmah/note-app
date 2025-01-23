@@ -48,29 +48,37 @@ Note names cannot contain special characters or exceed 50 characters.`,
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
+		appLogger.Log(fmt.Sprintf("[START] Creating new note with name: '%s'", args[0]))
+		
 		err := validateNoteName(args[0])
 		if err != nil {
+			appLogger.Log(fmt.Sprintf("[ERROR] Name validation failed for '%s': %v", args[0], err))
 			fmt.Println(err)
 			return
 		}
+		appLogger.Log(fmt.Sprintf("[SUCCESS] Name validation passed for '%s'", args[0]))
 
 		userHomeDir, err := confirmUserHomeDirectory()
 		if err != nil {
+			appLogger.Log(fmt.Sprintf("[ERROR] Home directory operation failed: %v", err))
 			fmt.Println(err)
 			return
 		}
 
 		notesDir, err := createNotesDirectory(userHomeDir)
 		if err != nil {
+			appLogger.Log(fmt.Sprintf("[ERROR] Notes directory creation failed: %v", err))
 			fmt.Println(err)
 			return
 		}
 
 		err = createAndSaveNote(notesDir, args[0])
 		if err != nil {
+			appLogger.Log(fmt.Sprintf("[ERROR] Note creation failed: %v", err))
 			fmt.Println(err)
 			return
 		}
+		appLogger.Log("[END] Note creation process completed successfully")
 	},
 }
 
@@ -80,18 +88,16 @@ Note names cannot contain special characters or exceed 50 characters.`,
 // It returns the absolute path to the user's home directory as a string and any error encountered.
 // If the home directory cannot be determined, it returns an empty string and a descriptive error.
 func confirmUserHomeDirectory() (string, error) {
-
-	appLogger.Log("Finding user's home directory...")
+	appLogger.Log("[START] Looking up user home directory")
 
 	userHomeDir, err := os.UserHomeDir()
 	if err != nil {
-		errMsg := fmt.Sprintf("Couldn't find user's home directory: %v", err)
+		errMsg := fmt.Sprintf("[ERROR] Home directory lookup failed: %v", err)
 		appLogger.Log(errMsg)
 		return "", fmt.Errorf("%s", errMsg)
 	}
 
-	successMsg := fmt.Sprintf("Found user's home directory: %s", userHomeDir)
-	appLogger.Log(successMsg)
+	appLogger.Log(fmt.Sprintf("[SUCCESS] Found home directory at: %s", userHomeDir))
 	return userHomeDir, nil
 }
 
@@ -100,12 +106,19 @@ func confirmUserHomeDirectory() (string, error) {
 // If creation fails, it returns an empty string and an error describing what went wrong.
 // The directory is created with permissions specified by dirPermissions constant.
 func createNotesDirectory(userHomeDir string) (string, error) {
+	appLogger.Log("[START] Setting up notes directory")
+
 	notesDirPath := filepath.Join(userHomeDir, defaultNotesDir)
+	appLogger.Log(fmt.Sprintf("[INFO] Target notes directory path: %s", notesDirPath))
 
 	err := os.MkdirAll(notesDirPath, os.FileMode(dirPermissions))
 	if err != nil {
-		return "", fmt.Errorf("couldn't make notes directory: %v", err)
+		errMsg := fmt.Sprintf("[ERROR] Directory creation failed: %v", err)
+		appLogger.Log(errMsg)
+		return "", fmt.Errorf("%s", errMsg)
 	}
+
+	appLogger.Log(fmt.Sprintf("[SUCCESS] Notes directory ready at: %s", notesDirPath))
 	return notesDirPath, nil
 }
 
@@ -121,23 +134,29 @@ func createNotesDirectory(userHomeDir string) (string, error) {
 //   - the note already exists
 //   - there are problems creating the file
 func createAndSaveNote(notesDirPath, noteName string) error {
+	appLogger.Log(fmt.Sprintf("[START] Creating note file for: '%s'", noteName))
 
-	// Time format is "YYYY_MM_DD_HH_MM"
 	fullNoteName := noteName + "_" + time.Now().Format("2006_01_02_15_04") + ".txt"
 	notePathFinal := filepath.Join(notesDirPath, fullNoteName)
 
-	// Check if note already exist (do not overwrite)
+	appLogger.Log(fmt.Sprintf("[INFO] Target note path: %s", notePathFinal))
+
 	if _, err := os.Stat(notePathFinal); err == nil {
-		return fmt.Errorf("%s already exists", noteName)
+		errMsg := fmt.Sprintf("[ERROR] Note already exists: %s", fullNoteName)
+		appLogger.Log(errMsg)
+		return fmt.Errorf("%s", errMsg)
 	}
 
-	// Create new note if it does not exist
 	file, err := os.Create(notePathFinal)
 	if err != nil {
+		errMsg := fmt.Sprintf("[ERROR] File creation failed: %v", err)
+		appLogger.Log(errMsg)
 		return fmt.Errorf("problem creating note: %v", err)
 	}
 	defer file.Close()
 
+	successMsg := fmt.Sprintf("[SUCCESS] Note created at: %s", notePathFinal)
+	appLogger.Log(successMsg)
 	fmt.Printf("Note successfully created at %s\n", notePathFinal)
 	return nil
 }
@@ -154,15 +173,20 @@ func createAndSaveNote(notesDirPath, noteName string) error {
 // Returns:
 //   - error: nil if validation passes, error with description if validation fails
 func validateNoteName(noteName string) error {
+	appLogger.Log(fmt.Sprintf("[START] Validating note name: '%s'", noteName))
+
 	if len(noteName) > noteNameCharLimit {
+		errMsg := fmt.Sprintf("[ERROR] Name exceeds %d character limit", noteNameCharLimit)
+		appLogger.Log(errMsg)
 		return fmt.Errorf("note name cannot exceed %d characters", noteNameCharLimit)
 	}
 
 	if strings.TrimSpace(noteName) != noteName {
+		errMsg := "[ERROR] Name contains leading or trailing spaces"
+		appLogger.Log(errMsg)
 		return fmt.Errorf("note name cannot begin or end with spaces")
 	}
 
-	// Collects all illegal characters found in note name for user display
 	var illegalCharsFound []rune
 	for _, r := range noteName {
 		if strings.ContainsRune(illegalChars, r) {
@@ -171,8 +195,11 @@ func validateNoteName(noteName string) error {
 	}
 
 	if len(illegalCharsFound) > 0 {
+		errMsg := fmt.Sprintf("[ERROR] Name contains illegal characters: '%s'", string(illegalCharsFound))
+		appLogger.Log(errMsg)
 		return fmt.Errorf("note name contains illegal character(s): \"%s\"", string(illegalCharsFound))
 	}
 
+	appLogger.Log("[SUCCESS] Note name validation passed all checks")
 	return nil
 }
