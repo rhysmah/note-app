@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rhysmah/note-app/internal/filesystem"
-	"github.com/rhysmah/note-app/internal/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -18,8 +16,6 @@ const (
 	illegalChars      string = "\\/:*?\"<>|:."
 	noteNameCharLimit int    = 50
 )
-
-var appLogger *logger.Logger
 
 // init initializes the command structure by adding the newNote command
 // as a subcommand to the root command. This function is automatically
@@ -45,30 +41,20 @@ Note names cannot contain special characters or exceed 50 characters.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		appLogger.Log(fmt.Sprintf("[START] Creating new note with name: '%s'", args[0]))
 
-		err := validateNoteName(args[0])
+		notesDir, err := dirManager.NotesDir()
+		if err != nil {
+			appLogger.Log(fmt.Sprintf("[ERROR] Cannot access notes directory: %v", err))
+			fmt.Println(err)
+			return
+		}
+
+		err = validateNoteName(args[0])
 		if err != nil {
 			appLogger.Log(fmt.Sprintf("[ERROR] Name validation failed for '%s': %v", args[0], err))
 			fmt.Println(err)
 			return
 		}
 		appLogger.Log(fmt.Sprintf("[SUCCESS] Name validation passed for '%s'", args[0]))
-
-		dm := filesystem.NewDirectoryManager(appLogger)
-
-		// Don't use returned user home directory
-		_, err = dm.ConfirmUserHomeDirectory()
-		if err != nil {
-			appLogger.Log(fmt.Sprintf("[ERROR] Home directory operation failed: %v", err))
-			fmt.Println(err)
-			return
-		}
-
-		notesDir, err := dm.ConfirmNotesDirectory()
-		if err != nil {
-			appLogger.Log(fmt.Sprintf("[ERROR] Notes directory creation failed: %v", err))
-			fmt.Println(err)
-			return
-		}
 
 		err = createAndSaveNote(notesDir, args[0])
 		if err != nil {
