@@ -115,7 +115,7 @@ func (l *Logger) setLoggerFile() error {
 
 	l.currentLogFile = logFile
 
-	if err := l.Log("Log file initialized"); err != nil {
+	if err := l.Log("[INFO] Log file initialized"); err != nil {
 		return fmt.Errorf("failed to writing initial log entry: %w", err)
 	}
 	return nil
