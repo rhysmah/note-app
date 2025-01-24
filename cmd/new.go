@@ -133,10 +133,17 @@ func validateNoteName(noteName string) error {
 		return fmt.Errorf("note name cannot begin or end with spaces")
 	}
 
-	if strings.Contains(illegalChars, noteName) {
-		errMsg := "[ERROR] Name contains illegal characters"
+	var illegalCharsFound []rune
+	for _, char := range noteName {
+		if strings.ContainsRune(illegalChars, char) {
+			illegalCharsFound = append(illegalCharsFound, char)
+		}
+	}
+
+	if len(illegalCharsFound) > 0 {
+		errMsg := fmt.Sprintf("[ERROR] Name contains illegal characters: %q", string(illegalCharsFound))
 		appLogger.Log(errMsg)
-		return fmt.Errorf("note name cannot contain any of the following illegal characters:\\, /, ., *, ?, \", <, >, :, |")
+		return fmt.Errorf("note name contains illegal characters: %q", string(illegalCharsFound))
 	}
 
 	appLogger.Log("[SUCCESS] Note name validation passed all checks")
