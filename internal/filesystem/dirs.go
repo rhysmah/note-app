@@ -106,7 +106,7 @@ func (dm *DirectoryManager) ConfirmNotesDirectory() (string, error) {
 
 func (dm *DirectoryManager) NotesDir() (string, error) {
 	if dm.notesDir == "" {
-		return "", fmt.Errorf("notes directory has not been initialized")
+		return "", fmt.Errorf("[ERROR] Notes directory has not been initialized")
 	}
 
 	return dm.notesDir, nil
