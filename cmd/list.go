@@ -15,38 +15,40 @@ var list = &cobra.Command{
 	Use:   "list",
 	Short: "Show all notes",
 	Run: func(cmd *cobra.Command, args []string) {
-		appLogger.Log("[START]: Starting to list notes")
+		appLogger.Log("[START] Listing all notes")
 
-		_, err := dirManager.ConfirmUserHomeDirectory()
+		err := listNotes(dirManager.NotesDir())
 		if err != nil {
-			appLogger.Log(fmt.Sprintf("[ERROR] Home directory operation failed: %v", err))
+			appLogger.Log(fmt.Sprintf("[ERROR] Failed to list notes: %v", err))
 			fmt.Println(err)
 			return
 		}
-
-		notesDir, err := dirManager.ConfirmNotesDirectory()
-		if err != nil {
-			appLogger.Log(fmt.Sprintf("[ERROR] Notes directory creation failed: %v", err))
-			fmt.Println(err)
-			return
-		}
-
-		err = listNotes(notesDir)
-		if err != nil {
-			fmt.Println(err)
-		}
+		appLogger.Log("[END] Note listing completed successfully")
 	},
 }
 
 // HELPERS
 func listNotes(notesDir string) error {
+	appLogger.Log(fmt.Sprintf("[START] Reading notes from directory: %s", notesDir))
+
 	notes, err := os.ReadDir(notesDir)
 	if err != nil {
-		return err
+		errMsg := fmt.Sprintf("[ERROR] Failed to read directory: %v", err)
+		appLogger.Log(errMsg)
+		return fmt.Errorf(errMsg)
 	}
 
+	if len(notes) == 0 {
+		appLogger.Log("[INFO] No notes found in directory")
+		fmt.Println("No notes found")
+		return nil
+	}
+
+	appLogger.Log(fmt.Sprintf("[INFO] Found %d notes", len(notes)))
 	for _, note := range notes {
 		fmt.Println(note.Name())
 	}
+
+	appLogger.Log("[SUCCESS] Successfully listed all notes")
 	return nil
 }
