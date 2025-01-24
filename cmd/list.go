@@ -17,7 +17,14 @@ var list = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		appLogger.Log("[START] Listing all notes")
 
-		err := listNotes(dirManager.NotesDir())
+		notesDir, err := dirManager.NotesDir()
+		if err != nil {
+			appLogger.Log(fmt.Sprintf("[ERROR] Cannot access notes directory: %v", err))
+			fmt.Println(err)
+			return
+		}
+
+		err = listNotes(notesDir)
 		if err != nil {
 			appLogger.Log(fmt.Sprintf("[ERROR] Failed to list notes: %v", err))
 			fmt.Println(err)
@@ -35,7 +42,7 @@ func listNotes(notesDir string) error {
 	if err != nil {
 		errMsg := fmt.Sprintf("[ERROR] Failed to read directory: %v", err)
 		appLogger.Log(errMsg)
-		return fmt.Errorf(errMsg)
+		return fmt.Errorf("%s", errMsg)
 	}
 
 	if len(notes) == 0 {
