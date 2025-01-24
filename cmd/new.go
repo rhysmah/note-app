@@ -9,16 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rhysmah/note-app/internal/filesystem"
 	"github.com/rhysmah/note-app/internal/logger"
 	"github.com/spf13/cobra"
 )
 
 const (
-	// Octal, as indiciated by 0.
-	// 7 means read, write, execute for owner
-	// 5 means read and execute for group and others, respectively
-	dirPermissions    int    = 0755
-	defaultNotesDir   string = "/notes"
 	illegalChars      string = "\\/:*?\"<>|:."
 	noteNameCharLimit int    = 50
 )
@@ -57,14 +53,17 @@ Note names cannot contain special characters or exceed 50 characters.`,
 		}
 		appLogger.Log(fmt.Sprintf("[SUCCESS] Name validation passed for '%s'", args[0]))
 
-		userHomeDir, err := confirmUserHomeDirectory()
+		dm := filesystem.NewDirectoryManager(appLogger)
+
+		// Don't use returned user home directory
+		_, err = dm.ConfirmUserHomeDirectory()
 		if err != nil {
 			appLogger.Log(fmt.Sprintf("[ERROR] Home directory operation failed: %v", err))
 			fmt.Println(err)
 			return
 		}
 
-		notesDir, err := createNotesDirectory(userHomeDir)
+		notesDir, err := dm.ConfirmNotesDirectory()
 		if err != nil {
 			appLogger.Log(fmt.Sprintf("[ERROR] Notes directory creation failed: %v", err))
 			fmt.Println(err)
@@ -82,44 +81,6 @@ Note names cannot contain special characters or exceed 50 characters.`,
 }
 
 // HELPER FUNCTIONS
-
-// confirmUserHomeDirectory retrieves the user's home directory path from the operating system.
-// It returns the absolute path to the user's home directory as a string and any error encountered.
-// If the home directory cannot be determined, it returns an empty string and a descriptive error.
-func confirmUserHomeDirectory() (string, error) {
-	appLogger.Log("[START] Looking up user home directory")
-
-	userHomeDir, err := os.UserHomeDir()
-	if err != nil {
-		errMsg := fmt.Sprintf("[ERROR] Home directory lookup failed: %v", err)
-		appLogger.Log(errMsg)
-		return "", fmt.Errorf("%s", errMsg)
-	}
-
-	appLogger.Log(fmt.Sprintf("[SUCCESS] Found home directory at: %s", userHomeDir))
-	return userHomeDir, nil
-}
-
-// createNotesDirectory creates a directory for storing notes in the user's home directory.
-// It takes the user's home directory path as input and returns the full path to the created notes directory.
-// If creation fails, it returns an empty string and an error describing what went wrong.
-// The directory is created with permissions specified by dirPermissions constant.
-func createNotesDirectory(userHomeDir string) (string, error) {
-	appLogger.Log("[START] Setting up notes directory")
-
-	notesDirPath := filepath.Join(userHomeDir, defaultNotesDir)
-	appLogger.Log(fmt.Sprintf("[INFO] Target notes directory path: %s", notesDirPath))
-
-	err := os.MkdirAll(notesDirPath, os.FileMode(dirPermissions))
-	if err != nil {
-		errMsg := fmt.Sprintf("[ERROR] Directory creation failed: %v", err)
-		appLogger.Log(errMsg)
-		return "", fmt.Errorf("%s", errMsg)
-	}
-
-	appLogger.Log(fmt.Sprintf("[SUCCESS] Notes directory ready at: %s", notesDirPath))
-	return notesDirPath, nil
-}
 
 // createAndSaveNote creates a new text file with the given name and current timestamp
 // in the specified directory. The file name format is: noteName_YYYY_MM_DD_HH_mm.txt
