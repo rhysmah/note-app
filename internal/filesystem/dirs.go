@@ -57,16 +57,16 @@ func NewDirectoryManager(logger *logger.Logger) *DirectoryManager {
 //   - string: The path to the user's home directory if successful
 //   - error: An error if the home directory lookup fails, nil otherwise
 func (dm *DirectoryManager) ConfirmUserHomeDirectory() (string, error) {
-	dm.logger.Log("[START] Looking up user home directory")
+	dm.logger.Start("Looking up user home directory")
 
 	userHomeDir, err := os.UserHomeDir()
 	if err != nil {
-		errMsg := fmt.Sprintf("[ERROR] Home directory lookup failed: %v", err)
-		dm.logger.Log(errMsg)
+		errMsg := fmt.Sprintf("Home directory lookup failed: %v", err)
+		dm.logger.Fail(errMsg)
 		return "", fmt.Errorf("%s", errMsg)
 	}
 
-	dm.logger.Log(fmt.Sprintf("[SUCCESS] Found home directory at: %s", userHomeDir))
+	dm.logger.Success(fmt.Sprintf("Found home directory at: %s", userHomeDir))
 	dm.homeDir = userHomeDir
 	return userHomeDir, nil
 }
@@ -80,33 +80,33 @@ func (dm *DirectoryManager) ConfirmUserHomeDirectory() (string, error) {
 //   - string: The absolute path to the notes directory
 //   - error: An error if the home directory is not set or if directory creation fails
 func (dm *DirectoryManager) ConfirmNotesDirectory() (string, error) {
-	dm.logger.Log("[START] Setting up notes directory")
+	dm.logger.Start("Setting up notes directory")
 
 	// Check that userHomeDir has been confirmed
 	if dm.homeDir == "" {
-		errMsg := fmt.Sprintln("[ERROR] User home directory not found")
-		dm.logger.Log(errMsg)
+		errMsg := fmt.Sprintln("User home directory not found")
+		dm.logger.Fail(errMsg)
 		return "", fmt.Errorf("%s", errMsg)
 	}
 
 	notesDirPath := filepath.Join(dm.homeDir, defaultNotesDir)
-	dm.logger.Log(fmt.Sprintf("[INFO] Target notes directory path: %s", notesDirPath))
+	dm.logger.Info(fmt.Sprintf("Target notes directory path: %s", notesDirPath))
 
 	err := os.MkdirAll(notesDirPath, os.FileMode(dirPermissions))
 	if err != nil {
-		errMsg := fmt.Sprintf("[ERROR] Directory creation failed: %v", err)
-		dm.logger.Log(errMsg)
+		errMsg := fmt.Sprintf("Directory creation failed: %v", err)
+		dm.logger.Fail(errMsg)
 		return "", fmt.Errorf("%s", errMsg)
 	}
 
-	dm.logger.Log(fmt.Sprintf("[SUCCESS] Notes directory ready at: %s", notesDirPath))
+	dm.logger.Success(fmt.Sprintf("Notes directory ready at: %s", notesDirPath))
 	dm.notesDir = notesDirPath
 	return notesDirPath, nil
 }
 
 func (dm *DirectoryManager) NotesDir() (string, error) {
 	if dm.notesDir == "" {
-		return "", fmt.Errorf("[ERROR] Notes directory has not been initialized")
+		return "", fmt.Errorf("Notes directory has not been initialized")
 	}
 
 	return dm.notesDir, nil

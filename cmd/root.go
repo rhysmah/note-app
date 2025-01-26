@@ -30,7 +30,7 @@ to quickly create a Cobra application.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 
 		var err error
-		appLogger, err = logger.New()
+		appLogger, err = logger.NewLogger()
 		if err != nil {
 			fmt.Printf("Failed to initialize logger: %v\n", err)
 			os.Exit(1)
@@ -39,14 +39,14 @@ to quickly create a Cobra application.`,
 		dirManager = filesystem.NewDirectoryManager(appLogger)
 		_, err = dirManager.ConfirmUserHomeDirectory()
 		if err != nil {
-			appLogger.Log(fmt.Sprintf("[ERROR] Home directory operation failed: %v", err))
+			appLogger.Fail(fmt.Sprintf("Home directory operation failed: %v", err))
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
 		_, err = dirManager.ConfirmNotesDirectory()
 		if err != nil {
-			appLogger.Log(fmt.Sprintf("[ERROR] Notes directory creation failed: %v", err))
+			appLogger.Fail(fmt.Sprintf("Notes directory creation failed: %v", err))
 			fmt.Println(err)
 			os.Exit(1)
 		}
