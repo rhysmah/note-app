@@ -41,7 +41,7 @@ func (l LogType) String() string {
 	}
 
 	if l < 0 || int(l) > len(values) {
-		return "[UNKNOWN]"c
+		return "[UNKNOWN]"
 	}
 
 	return values[l]
