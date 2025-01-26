@@ -21,11 +21,37 @@ type Logger struct {
 	logDir         string
 }
 
+type LogType int
+
+const (
+	SuccessLogType LogType = iota
+	FailLogType
+	StartLogType
+	EndLogType
+	InfoLogType
+)
+
+func (l LogType) String() string {
+	values := [...]string{
+		"[SUCCESS]",
+		"[FAIL]",
+		"[START]",
+		"[END]",
+		"[INFO]",
+	}
+
+	if l < 0 || int(l) > len(values) {
+		return "[UNKNOWN]"c
+	}
+
+	return values[l]
+}
+
 // New creates and initializes a new Logger instance.
 // It sets up the necessary directory structure for logging and creates an initial log file.
 // Returns a pointer to the Logger instance and any error encountered during initialization.
 // If an error occurs during directory creation or log file setup, it returns nil and the error.
-func New() (*Logger, error) {
+func NewLogger() (*Logger, error) {
 
 	logger := &Logger{}
 
@@ -41,14 +67,14 @@ func New() (*Logger, error) {
 	return logger, nil
 }
 
-func (l *Logger) Log(message string) error {
+func (l *Logger) log(logType LogType, message string) error {
 
 	if l.currentLogFile == nil {
 		return fmt.Errorf("no log file is currently open")
 	}
 
 	messageTimeStamp := time.Now().Format("2006-01-02 15:04:05")
-	logEntry := fmt.Sprintf("[%s] %s\n", messageTimeStamp, message)
+	logEntry := fmt.Sprintf("[%s] %s %s\n", messageTimeStamp, logType, message)
 
 	_, err := l.currentLogFile.WriteString(logEntry)
 	if err != nil {
@@ -56,6 +82,27 @@ func (l *Logger) Log(message string) error {
 	}
 
 	return nil
+}
+
+// LogType Helper Functions
+func (l *Logger) Info(message string) error {
+	return l.log(InfoLogType, message)
+}
+
+func (l *Logger) Start(message string) error {
+	return l.log(StartLogType, message)
+}
+
+func (l *Logger) End(message string) error {
+	return l.log(EndLogType, message)
+}
+
+func (l *Logger) Success(message string) error {
+	return l.log(SuccessLogType, message)
+}
+
+func (l *Logger) Fail(message string) error {
+	return l.log(FailLogType, message)
 }
 
 func (l *Logger) Close() error {
@@ -115,7 +162,7 @@ func (l *Logger) setLoggerFile() error {
 
 	l.currentLogFile = logFile
 
-	if err := l.Log("[INFO] Log file initialized"); err != nil {
+	if err := l.Info("Log file initialized"); err != nil {
 		return fmt.Errorf("failed to writing initial log entry: %w", err)
 	}
 	return nil
