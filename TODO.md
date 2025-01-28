@@ -25,6 +25,23 @@ COMMANDS
 	> User selects which note to delete via flag
 	> Confirmation occurs so no accidental deletions
 
+list.go
+- The os.ReadDir() function automatically sorts files by filename, so
+  no specific function needs to be written for that.
+- However, it gets complicated if we want to sort for date. There are
+  two date sorting functions we can implement: one will sort based on
+  Last Modified dates, the other by Date Created dates. However, OS
+  files systems only track Last Modified date, so I'll have to add
+  the creation date to the filenames themselves, extract that string,
+  convert that string into a datetime object, and write a custom
+  sorting function using the Go's sort package interface.
+- I'll also have to create a File type that stores information, including
+  the filename, the creation date, and the last modified date; this is
+  required to allow the CLI to work.
+- I'll create a method on the File type to extract this data and populate 
+  this different file types.
+
 FUTURE FEATURES
 - [ ] Add more data for notes -- an object with a name and date field, possibly tags
 - [ ] Allow bulk deletion
+
