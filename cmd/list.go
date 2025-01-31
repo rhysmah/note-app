@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/rhysmah/note-app/file"
 	"github.com/spf13/cobra"
 )
 
@@ -24,38 +25,56 @@ var list = &cobra.Command{
 			return
 		}
 
-		err = listNotes(notesDir)
+		appLogger.Info("Reading notes from directory")
+		files, err := getFiles(notesDir)
 		if err != nil {
-			appLogger.Fail(fmt.Sprintf("Failed to list notes: %v", err))
-			fmt.Println(err)
+			appLogger.Fail(fmt.Sprintf("Failed to get files: %v", err))
+			fmt.Println("Unable to read notes")
 			return
 		}
+
+		for _, file := range files {
+			fmt.Println(file.Name)
+		}
+
 		appLogger.End("Note listing completed successfully")
 	},
 }
 
 // HELPERS
-func listNotes(notesDir string) error {
-	appLogger.Start(fmt.Sprintf("Reading notes from directory: %s", notesDir))
+func getFiles(notesDir string) ([]file.File, error) {
 
 	notes, err := os.ReadDir(notesDir)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to read directory: %v", err)
 		appLogger.Fail(errMsg)
-		return fmt.Errorf("%s", errMsg)
+		return nil, fmt.Errorf("%s", errMsg)
 	}
 
 	if len(notes) == 0 {
 		appLogger.Info("No notes found in directory")
-		fmt.Println("No notes found")
-		return nil
+		errMsg := "No notes found in directory"
+		return nil, fmt.Errorf("%s", errMsg)
 	}
 
 	appLogger.Info(fmt.Sprintf("Found %d notes", len(notes)))
+	appLogger.Info(fmt.Sprintf("Starting to process %d notes", len(notes)))
+
+	files := make([]file.File, 0, len(notes))
+
 	for _, note := range notes {
-		fmt.Println(note.Name())
+		appLogger.Info(fmt.Sprintf("Processing note: %s", note.Name()))
+
+		newFile, err := file.NewFile(note.Name(), notesDir, appLogger)
+		if err != nil {
+			errMsg := fmt.Sprintf("Trouble accessing file: %v", err)
+			appLogger.Fail(errMsg)
+			return nil, fmt.Errorf("%s", errMsg)
+		}
+
+		files = append(files, *newFile)
 	}
 
-	appLogger.Success("Successfully listed all notes")
-	return nil
+	appLogger.Success(fmt.Sprintf("Successfully processed %d notes", len(files)))
+	return files, nil
 }
