@@ -25,18 +25,10 @@ var rootCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		dirManager = filesystem.NewDirectoryManager(appLogger)
-		_, err = dirManager.ConfirmUserHomeDirectory()
+		dirManager, err = filesystem.NewDirectoryManager(appLogger)
 		if err != nil {
-			appLogger.Fail(fmt.Sprintf("Home directory operation failed: %v", err))
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		_, err = dirManager.ConfirmNotesDirectory()
-		if err != nil {
-			appLogger.Fail(fmt.Sprintf("Notes directory creation failed: %v", err))
-			fmt.Println(err)
+			errMsg := fmt.Sprintf("Home directory operation failed: %w", err)
+			appLogger.Fail(errMsg)
 			os.Exit(1)
 		}
 	},
