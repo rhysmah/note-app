@@ -9,10 +9,15 @@ import (
 )
 
 // Octal: 4 = read, 2 = write, 1 = execute
-const ownerReadWritePerms = 0755
-const logReadWritePerms = 0644
-const logFilePrefix = "log_"
-const logFileSuffix = ".txt"
+const (
+	ownerReadWritePerms = 0755
+	logReadWritePerms   = 0644
+)
+
+const (
+	logFilePrefix = "log_"
+	logFileSuffix = ".txt"
+)
 
 type Logger struct {
 	logDirectory   string
