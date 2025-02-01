@@ -7,15 +7,13 @@ import (
 	"time"
 )
 
-// read/write/execute permission for owner
-// 4 = read (r), 2 = write (w), 1 = execute (x)
+// Octal: 4 = read, 2 = write, 1 = execute
 const ownerReadWritePerms = 0755
 const logReadWritePerms = 0644
 const logFilePrefix = "log_"
 
-// Logger manages logging operations with file rotation capabilities.
-// It maintains a reference to the current log file and the directory
-// where log files are stored.
+// Logger manages logging operations.
+// Maintains a reference to current log file and log file directory
 type Logger struct {
 	currentLogFile *os.File
 	logDir         string
