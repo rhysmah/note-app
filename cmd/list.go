@@ -24,13 +24,8 @@ var list = &cobra.Command{
 		byMod, _ := cmd.Flags().GetBool("byMod")
 		// byCtd, _ := cmd.Flags().GetString("byCtd")
 
-		notesDir, err := dirManager.NotesDir()
-		if err != nil {
-			appLogger.Fail(fmt.Sprintf("Cannot access notes directory: %v", err))
-			fmt.Println(err)
-			return
-		}
-
+		notesDir := dirManager.NotesDir()
+	
 		appLogger.Info("Reading notes from directory")
 		files, err := getFiles(notesDir)
 		if err != nil {
@@ -54,35 +49,32 @@ var list = &cobra.Command{
 	},
 }
 
-// HELPERS
 func getFiles(notesDir string) ([]file.File, error) {
-
 	notes, err := os.ReadDir(notesDir)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to read directory: %v", err)
 		appLogger.Fail(errMsg)
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, fmt.Errorf(errMsg)
 	}
 
 	if len(notes) == 0 {
-		appLogger.Info("No notes found in directory")
 		errMsg := "No notes found in directory"
-		return nil, fmt.Errorf("%s", errMsg)
+		appLogger.Info(errMsg)
+		return nil, fmt.Errorf(errMsg)
 	}
 
 	appLogger.Info(fmt.Sprintf("Found %d notes", len(notes)))
-	appLogger.Info(fmt.Sprintf("Starting to process %d notes", len(notes)))
 
 	files := make([]file.File, 0, len(notes))
-
 	for _, note := range notes {
 		appLogger.Info(fmt.Sprintf("Processing note: %s", note.Name()))
 
 		newFile, err := file.NewFile(note.Name(), notesDir, appLogger)
+
 		if err != nil {
 			errMsg := fmt.Sprintf("Trouble accessing file: %v", err)
 			appLogger.Fail(errMsg)
-			return nil, fmt.Errorf("%s", errMsg)
+			return nil, fmt.Errorf(errMsg)
 		}
 
 		files = append(files, *newFile)
