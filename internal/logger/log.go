@@ -59,8 +59,6 @@ func NewLogger() (*Logger, error) {
 
 	newLogger := &Logger{
 		logDirectory:   "",
-		currentLogFile: nil,
-		logger:         nil,
 	}
 
 	// Directory created and assigned to 'logDirectory' field
