@@ -26,7 +26,7 @@ func NewDirectoryManager(logger *logger.Logger) (*DirectoryManager, error) {
 	}
 
 	dm := &DirectoryManager{
-		logger:   logger,
+		logger: logger,
 	}
 
 	if err := dm.initialize(); err != nil {
