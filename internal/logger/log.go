@@ -13,7 +13,7 @@ const logReadWritePerms = 0644
 const logFilePrefix = "log_"
 
 // Logger manages logging operations.
-// Maintains a reference to current log file and log file directory
+// Maintains reference to current log file and log file directory
 type Logger struct {
 	currentLogFile *os.File
 	logDir         string
