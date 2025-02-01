@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-// Octal: read/write/execute permission for owner
+// read/write/execute permission for owner
 // 4 = read (r), 2 = write (w), 1 = execute (x)
 const ownerReadWritePerms = 0755
 const logReadWritePerms = 0644
-const logFilePrefix = "note_app_log_"
+const logFilePrefix = "log_"
 
 // Logger manages logging operations with file rotation capabilities.
 // It maintains a reference to the current log file and the directory
