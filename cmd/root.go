@@ -43,7 +43,7 @@ var rootCmd = &cobra.Command{
 
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
 		if appLogger != nil {
-			appLogger.Close()
+			appLogger.CloseCurrentLogFile()
 		}
 	},
 }
