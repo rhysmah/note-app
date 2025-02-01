@@ -19,7 +19,6 @@ type File struct {
 }
 
 func NewFile(fileName, notesDir string, logger *logger.Logger) (*File, error) {
-
 	newFile := &File{
 		Name:     fileName,
 		FilePath: filepath.Join(notesDir, fileName),
@@ -27,9 +26,7 @@ func NewFile(fileName, notesDir string, logger *logger.Logger) (*File, error) {
 
 	dateModified, err := getDateModified(newFile.FilePath, logger)
 	if err != nil {
-		errMsg := fmt.Sprintf("Error accessing file's Date Modified: %v", err)
-		logger.Fail(errMsg)
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, fmt.Errorf("error accessing file's Date Modified: %w", err)
 	}
 	newFile.DateModified = dateModified
 
@@ -42,9 +39,9 @@ func getDateModified(filePath string, logger *logger.Logger) (time.Time, error) 
 	fileInfo, err := os.Stat(filePath)
 
 	if err != nil {
-		errMsg := fmt.Sprintf("Error accessing file info: %v", err)
+		errMsg := fmt.Sprintf("error accessing file info: %v", err)
 		logger.Fail(errMsg)
-		return time.Time{}, fmt.Errorf("%s", errMsg)
+		return time.Time{}, fmt.Errorf(errMsg)
 	}
 
 	return fileInfo.ModTime(), nil
