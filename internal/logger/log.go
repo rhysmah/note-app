@@ -12,21 +12,20 @@ const ownerReadWritePerms = 0755
 const logReadWritePerms = 0644
 const logFilePrefix = "log_"
 
-// Logger manages logging operations.
-// Maintains reference to current log file and log file directory
+// Logger has reference to current log file and log file directory
 type Logger struct {
 	currentLogFile *os.File
-	logDir         string
+	logDirectory   string
 }
 
 type LogType int
 
 const (
-	SuccessLogType LogType = iota
-	FailLogType
-	StartLogType
-	EndLogType
-	InfoLogType
+	SuccessLog LogType = iota
+	FailLog
+	StartLog
+	EndLog
+	InfoLog
 )
 
 func (l LogType) String() string {
@@ -38,7 +37,7 @@ func (l LogType) String() string {
 		"[INFO]",
 	}
 
-	if l < 0 || int(l) > len(values) {
+	if l < SuccessLog || l > InfoLog {
 		return "[UNKNOWN]"
 	}
 
@@ -71,8 +70,8 @@ func (l *Logger) log(logType LogType, message string) error {
 		return fmt.Errorf("no log file is currently open")
 	}
 
-	messageTimeStamp := time.Now().Format("2006-01-02 15:04:05")
-	logEntry := fmt.Sprintf("[%s] %s %s\n", messageTimeStamp, logType, message)
+	msgTimeStamp := time.Now().Format("2006-01-02 15:04:05")
+	logEntry := fmt.Sprintf("[%s] %s %s\n", msgTimeStamp, logType, message)
 
 	_, err := l.currentLogFile.WriteString(logEntry)
 	if err != nil {
@@ -84,23 +83,23 @@ func (l *Logger) log(logType LogType, message string) error {
 
 // LogType Helper Functions
 func (l *Logger) Info(message string) error {
-	return l.log(InfoLogType, message)
+	return l.log(InfoLog, message)
 }
 
 func (l *Logger) Start(message string) error {
-	return l.log(StartLogType, message)
+	return l.log(StartLog, message)
 }
 
 func (l *Logger) End(message string) error {
-	return l.log(EndLogType, message)
+	return l.log(EndLog, message)
 }
 
 func (l *Logger) Success(message string) error {
-	return l.log(SuccessLogType, message)
+	return l.log(SuccessLog, message)
 }
 
 func (l *Logger) Fail(message string) error {
-	return l.log(FailLogType, message)
+	return l.log(FailLog, message)
 }
 
 func (l *Logger) Close() error {
@@ -132,7 +131,7 @@ func (l *Logger) createLogDirectory() error {
 		return fmt.Errorf("couldn't make app directory: %w", err)
 	}
 
-	l.logDir = logsFilePath
+	l.logDirectory = logsFilePath
 	return nil
 }
 
@@ -150,7 +149,7 @@ func (l *Logger) setLoggerFile() error {
 
 	// Create new log file with timestamp
 	logTimeStamp := time.Now().Format("2006_01_02_15_04")
-	logFileName := filepath.Join(l.logDir, logFilePrefix+logTimeStamp+".txt")
+	logFileName := filepath.Join(l.logDirectory, logFilePrefix+logTimeStamp+".txt")
 
 	// Create log file
 	logFile, err := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, logReadWritePerms)
