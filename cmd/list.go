@@ -25,7 +25,7 @@ var list = &cobra.Command{
 		// byCtd, _ := cmd.Flags().GetString("byCtd")
 
 		notesDir := dirManager.NotesDir()
-	
+
 		appLogger.Info("Reading notes from directory")
 		files, err := getFiles(notesDir)
 		if err != nil {
