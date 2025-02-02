@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -38,6 +39,7 @@ Note names cannot contain special characters or exceed 50 characters.`,
 
 		if err := createNote(args[0]); err != nil {
 			fmt.Printf("There was an error creating your note: %v\n", err)
+			fmt.Printf("There was an error creating your note: %v\n", errors.Unwrap(err))
 			os.Exit(1)
 		}
 
@@ -47,12 +49,12 @@ Note names cannot contain special characters or exceed 50 characters.`,
 
 func createNote(noteName string) error {
 	notesDir := dirManager.NotesDir()
-		if notesDir == "" {
-			errMsg := fmt.Sprintf("Cannot access notes directory: %s", notesDir)
-			appLogger.Fail(errMsg)
-			return fmt.Errorf(errMsg)
-		}
-	
+	if notesDir == "" {
+		errMsg := fmt.Sprintf("Cannot access notes directory: %s", notesDir)
+		appLogger.Fail(errMsg)
+		return fmt.Errorf(errMsg)
+	}
+
 	if err := validateNoteName(noteName); err != nil {
 		return fmt.Errorf("invalid note name: %w", err)
 	}
@@ -63,7 +65,6 @@ func createNote(noteName string) error {
 
 	return nil
 }
-
 
 func createAndSaveNote(noteName, notesDirPath string) error {
 	appLogger.Start(fmt.Sprintf("Creating note '%s' in directory %s...", noteName, notesDirPath))
@@ -114,7 +115,7 @@ func validateNoteName(noteName string) error {
 
 func checkForIllegalCharacters(noteName string) error {
 	var illegalCharsFound []rune
-	
+
 	for _, char := range noteName {
 		if strings.ContainsRune(illegalChars, char) {
 			illegalCharsFound = append(illegalCharsFound, char)
@@ -126,6 +127,6 @@ func checkForIllegalCharacters(noteName string) error {
 		appLogger.Fail(errMsg)
 		return fmt.Errorf(errMsg)
 	}
-	
+
 	return nil
 }
