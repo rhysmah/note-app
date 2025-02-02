@@ -1,5 +1,3 @@
-// Package cmd provides command-line functionality for managing notes,
-// including creation and organization of text files in a specified directory.s
 package cmd
 
 import (
@@ -13,13 +11,10 @@ import (
 )
 
 const (
-	illegalChars      string = "\\/:*?\"<>|:."
+	illegalChars      string = "\\/:*?\"<>|: ."
 	noteNameCharLimit int    = 50
 )
 
-// init initializes the command structure by adding the newNote command
-// as a subcommand to the root command. This function is automatically
-// called during package initialization.
 func init() {
 	rootCmd.AddCommand(new)
 }
@@ -41,44 +36,28 @@ Note names cannot contain special characters or exceed 50 characters.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		appLogger.Start(fmt.Sprintf("Creating new note with name: '%s'", args[0]))
 
-		notesDir, err := dirManager.NotesDir()
-		if err != nil {
-			appLogger.Fail(fmt.Sprintf("Cannot access notes directory: %v", err))
-			fmt.Println(err)
+		notesDir := dirManager.NotesDir()
+		if notesDir == "" {
+			appLogger.Fail("Cannot access notes directory")
 			return
 		}
 
-		err = validateNoteName(args[0])
+		err := validateNoteName(args[0])
 		if err != nil {
-			appLogger.Fail(fmt.Sprintf("Name validation failed for '%s': %v", args[0], err))
-			fmt.Println(err)
+			fmt.Printf("Name validation failed for '%s': %v", args[0], err)
 			return
 		}
 		appLogger.Success(fmt.Sprintf("Name validation passed for '%s'", args[0]))
 
 		err = createAndSaveNote(notesDir, args[0])
 		if err != nil {
-			appLogger.Fail(fmt.Sprintf("Note creation failed: %v", err))
-			fmt.Println(err)
+			fmt.Printf("Note creation failed: %v", err)
 			return
 		}
 		appLogger.End("Note creation process completed successfully")
 	},
 }
 
-// HELPER FUNCTIONS
-
-// createAndSaveNote creates a new text file with the given name and current timestamp
-// in the specified directory. The file name format is: noteName_YYYY_MM_DD_HH_mm.txt
-//
-// Parameters:
-//   - notesDirPath: the directory path where the note will be saved
-//   - noteName: the base name for the note (without extension)
-//
-// Returns:
-//   - error: nil if successful, otherwise returns an error if:
-//   - the note already exists
-//   - there are problems creating the file
 func createAndSaveNote(notesDirPath, noteName string) error {
 	appLogger.Start(fmt.Sprintf("Creating note file for: '%s'", noteName))
 
@@ -107,17 +86,6 @@ func createAndSaveNote(notesDirPath, noteName string) error {
 	return nil
 }
 
-// validateNoteName checks if the provided note name meets the required criteria.
-// It verifies that:
-// - The note name does not exceed the character limit
-// - The note name does not begin or end with whitespace
-// - The note name does not contain any illegal characters (., \, /, :, *, ?, ", <, >, |)
-//
-// Parameters:
-//   - noteName: string to be validated
-//
-// Returns:
-//   - error: nil if validation passes, error with description if validation fails
 func validateNoteName(noteName string) error {
 	appLogger.Start(fmt.Sprintf("Validating note name: '%s'", noteName))
 
