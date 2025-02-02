@@ -10,4 +10,4 @@ type ByModifiedDate []File
 
 func (bmd ByModifiedDate) Len() int           { return len(bmd) }
 func (bmd ByModifiedDate) Swap(i, j int)      { bmd[i], bmd[j] = bmd[j], bmd[i] }
-func (bmd ByModifiedDate) Less(i, j int) bool { return bmd[i].DateCreated.Before(bmd[j].DateCreated) }
+func (bmd ByModifiedDate) Less(i, j int) bool { return bmd[i].DateModified.After(bmd[j].DateModified) }

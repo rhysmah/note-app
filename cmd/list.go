@@ -11,8 +11,8 @@ import (
 
 func init() {
 	rootCmd.AddCommand(list)
-	list.PersistentFlags().Bool("byCtd", false, "List all files by their creation date, newest to oldest")
-	list.PersistentFlags().Bool("byMod", false, "List all files by their last-modified date, newest to oldest")
+	list.PersistentFlags().Bool("c", false, "List all files by their creation date, newest to oldest")
+	list.PersistentFlags().Bool("m", false, "List all files by their last-modified date, newest to oldest")
 }
 
 var list = &cobra.Command{
@@ -21,7 +21,7 @@ var list = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		appLogger.Start("Listing all notes...")
 
-		byMod, _ := cmd.Flags().GetBool("byMod")
+		byMod, _ := cmd.Flags().GetBool("m")
 		// byCtd, _ := cmd.Flags().GetString("byCtd")
 
 		notesDir := dirManager.NotesDir()
@@ -35,8 +35,12 @@ var list = &cobra.Command{
 		}
 
 		if byMod {
+			fmt.Println("Listing files by Modified Date, newest to oldest")
+			fmt.Println()
+
 			byModDate := file.ByModifiedDate(files)
 			sort.Sort(byModDate)
+
 			for _, file := range byModDate {
 				fmt.Println(file.Name)
 			}
