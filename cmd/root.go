@@ -27,8 +27,7 @@ var rootCmd = &cobra.Command{
 
 		dirManager, err = filesystem.NewDirectoryManager(appLogger)
 		if err != nil {
-			errMsg := fmt.Sprintf("Home directory operation failed: %w", err)
-			appLogger.Fail(errMsg)
+			fmt.Sprintf("Home directory operation failed: %w", err)
 			os.Exit(1)
 		}
 	},
