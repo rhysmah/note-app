@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -39,7 +38,6 @@ Note names cannot contain special characters or exceed 50 characters.`,
 
 		if err := createNote(args[0]); err != nil {
 			fmt.Printf("There was an error creating your note: %v\n", err)
-			fmt.Printf("There was an error creating your note: %v\n", errors.Unwrap(err))
 			os.Exit(1)
 		}
 
