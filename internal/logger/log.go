@@ -58,17 +58,15 @@ func (l LogType) String() string {
 func NewLogger() (*Logger, error) {
 
 	newLogger := &Logger{
-		logDirectory:   "",
+		logDirectory: "",
 	}
 
-	// Directory created and assigned to 'logDirectory' field
 	logDir, err := newLogger.createLogDirectory()
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create app directory: %w", err)
 	}
 	newLogger.logDirectory = logDir
 
-	// Initial log file created and assigned to 'currentLogFile' field
 	logFile, err := newLogger.setLoggerFile()
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create log file: %w", err)
