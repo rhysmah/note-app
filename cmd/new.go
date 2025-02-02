@@ -36,72 +36,85 @@ Note names cannot contain special characters or exceed 50 characters.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		appLogger.Start(fmt.Sprintf("Creating new note with name: '%s'", args[0]))
 
-		notesDir := dirManager.NotesDir()
-		if notesDir == "" {
-			appLogger.Fail("Cannot access notes directory")
-			return
+		if err := createNote(args[0]); err != nil {
+			fmt.Printf("There was an error creating your note: %v\n", err)
+			os.Exit(1)
 		}
 
-		err := validateNoteName(args[0])
-		if err != nil {
-			fmt.Printf("Name validation failed for '%s': %v", args[0], err)
-			return
-		}
-		appLogger.Success(fmt.Sprintf("Name validation passed for '%s'", args[0]))
-
-		err = createAndSaveNote(notesDir, args[0])
-		if err != nil {
-			fmt.Printf("Note creation failed: %v", err)
-			return
-		}
 		appLogger.End("Note creation process completed successfully")
 	},
 }
 
-func createAndSaveNote(notesDirPath, noteName string) error {
-	appLogger.Start(fmt.Sprintf("Creating note file for: '%s'", noteName))
-
-	fullNoteName := noteName + "_" + time.Now().Format("2006_01_02_15_04") + ".txt"
-	notePathFinal := filepath.Join(notesDirPath, fullNoteName)
-
-	appLogger.Info(fmt.Sprintf("Target note path: %s", notePathFinal))
-
-	if _, err := os.Stat(notePathFinal); err == nil {
-		errMsg := fmt.Sprintf("Note already exists: %s", fullNoteName)
-		appLogger.Fail(errMsg)
-		return fmt.Errorf("%s", errMsg)
+func createNote(noteName string) error {
+	notesDir := dirManager.NotesDir()
+		if notesDir == "" {
+			errMsg := fmt.Sprintf("Cannot access notes directory: %s", notesDir)
+			appLogger.Fail(errMsg)
+			return fmt.Errorf(errMsg)
+		}
+	
+	if err := validateNoteName(noteName); err != nil {
+		return fmt.Errorf("invalid note name: %w", err)
 	}
 
-	file, err := os.Create(notePathFinal)
-	if err != nil {
-		errMsg := fmt.Sprintf("File creation failed: %v", err)
+	if err := createAndSaveNote(noteName, notesDir); err != nil {
+		return fmt.Errorf("failed to create note %s: %w", noteName, err)
+	}
+
+	return nil
+}
+
+
+func createAndSaveNote(noteName, notesDirPath string) error {
+	appLogger.Start(fmt.Sprintf("Creating note '%s' in directory %s...", noteName, notesDirPath))
+
+	fullNoteName := noteName + "_" + time.Now().Format("2006_01_02_15_04") + ".txt"
+	notePath := filepath.Join(notesDirPath, fullNoteName)
+
+	// Check if note already exists
+	if _, err := os.Stat(notePath); err == nil {
+		errMsg := fmt.Sprintf("note %q already exists", fullNoteName)
 		appLogger.Fail(errMsg)
-		return fmt.Errorf("problem creating note: %v", err)
+		return fmt.Errorf(errMsg)
+	}
+
+	// Create note
+	file, err := os.Create(notePath)
+	if err != nil {
+		errMsg := fmt.Sprintf("failed to create file: %v", err)
+		appLogger.Fail(errMsg)
+		return fmt.Errorf(errMsg)
 	}
 	defer file.Close()
 
-	successMsg := fmt.Sprintf("Note created at: %s", notePathFinal)
+	successMsg := fmt.Sprintf("note created at: %s", notePath)
 	appLogger.Success(successMsg)
-	fmt.Printf("Note successfully created at %s\n", notePathFinal)
+	fmt.Printf("Created note: %s\n", notePath)
 	return nil
 }
 
 func validateNoteName(noteName string) error {
 	appLogger.Start(fmt.Sprintf("Validating note name: '%s'", noteName))
 
-	if len(noteName) > noteNameCharLimit {
-		errMsg := fmt.Sprintf("Name exceeds %d character limit", noteNameCharLimit)
+	noteNameTrimmed := strings.TrimSpace(noteName)
+
+	if len(noteNameTrimmed) > noteNameCharLimit {
+		errMsg := fmt.Sprintf("name exceeds %d character limit", noteNameCharLimit)
 		appLogger.Fail(errMsg)
-		return fmt.Errorf("note name cannot exceed %d characters", noteNameCharLimit)
+		return fmt.Errorf(errMsg)
 	}
 
-	if strings.TrimSpace(noteName) != noteName {
-		errMsg := "Name contains leading or trailing spaces"
-		appLogger.Fail(errMsg)
-		return fmt.Errorf("note name cannot begin or end with spaces")
+	if err := checkForIllegalCharacters(noteNameTrimmed); err != nil {
+		return fmt.Errorf("invalid characters in note name: %w", err)
 	}
 
+	appLogger.Success("Note name passed all validation checks")
+	return nil
+}
+
+func checkForIllegalCharacters(noteName string) error {
 	var illegalCharsFound []rune
+	
 	for _, char := range noteName {
 		if strings.ContainsRune(illegalChars, char) {
 			illegalCharsFound = append(illegalCharsFound, char)
@@ -109,11 +122,10 @@ func validateNoteName(noteName string) error {
 	}
 
 	if len(illegalCharsFound) > 0 {
-		errMsg := fmt.Sprintf("Name contains illegal characters: %q", string(illegalCharsFound))
+		errMsg := fmt.Sprintf("name contains illegal characters: %q", string(illegalCharsFound))
 		appLogger.Fail(errMsg)
-		return fmt.Errorf("note name contains illegal characters: %q", string(illegalCharsFound))
+		return fmt.Errorf(errMsg)
 	}
-
-	appLogger.Success("Note name validation passed all checks")
+	
 	return nil
 }
