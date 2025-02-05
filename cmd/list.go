@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"sort"
 
 	"github.com/rhysmah/note-app/file"
 	"github.com/spf13/cobra"
@@ -22,7 +21,12 @@ var list = &cobra.Command{
 		appLogger.Start("Listing all notes...")
 
 		byMod, _ := cmd.Flags().GetBool("m")
-		// byCtd, _ := cmd.Flags().GetString("byCtd")
+		byCtd, _ := cmd.Flags().GetBool("c")
+
+		if byMod && byCtd {
+			appLogger.Fail("Cannot use both --m and --c flags")
+			return
+		}
 
 		notesDir := dirManager.NotesDir()
 
@@ -34,21 +38,10 @@ var list = &cobra.Command{
 			return
 		}
 
-		if byMod {
-			fmt.Println("Listing files by Modified Date, newest to oldest")
-			fmt.Println()
-
-			byModDate := file.ByModifiedDate(files)
-			sort.Sort(byModDate)
-
-			for _, file := range byModDate {
-				fmt.Println(file.Name)
-			}
-		} else {
-			for _, file := range files {
-				fmt.Println(file.Name)
-			}
+		for _, file := range files {
+			fmt.Println(file.Name)
 		}
+
 		appLogger.End("Note listing completed successfully")
 	},
 }
@@ -87,3 +80,24 @@ func getFiles(notesDir string) ([]file.File, error) {
 	appLogger.Success(fmt.Sprintf("Successfully processed %d notes", len(files)))
 	return files, nil
 }
+
+
+// sort.Slice(files, func(i, j int) bool {
+// 			switch {
+// 			case byMod:
+// 				return files[i].DateModified.After(files[j].DateModified)
+// 			case byCtd:
+// 				return files[i].DateCreated.Before(files[j].DateCreated)
+// 			default:
+// 				return files[i].Name < files[j].Name
+// 			}
+// 		})
+
+// 		switch {
+// 		case byMod:
+// 			fmt.Println("Listing files by Modified Date, newest to oldest")
+// 		case byCtd:
+// 			fmt.Println("Listing files by Creation Date, newest to oldest")
+// 		default:
+// 			fmt.Println("Listing files by name")
+// 		}
