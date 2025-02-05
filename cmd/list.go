@@ -81,6 +81,15 @@ func getFiles(notesDir string) ([]file.File, error) {
 	return files, nil
 }
 
+// TODO:
+// 1) Create a sortOptions struct with the booleans of the list options we want.
+// 2) Create function to print sortType header
+// 3) Create closure function to get sort function typew
+// 4) Creat function to validate sort -- only one sort type possible
+// 5) Create sortFiles function that sorts files using closure function.
+// 6) Create a helper function to ensure the flags we get are bools
+
+
 
 // sort.Slice(files, func(i, j int) bool {
 // 			switch {
