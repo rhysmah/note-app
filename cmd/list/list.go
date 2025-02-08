@@ -81,31 +81,3 @@ func getFiles(notesDir string) ([]file.File, error) {
 	root.AppLogger.Success(fmt.Sprintf("Successfully processed %d notes", len(files)))
 	return files, nil
 }
-
-// TODO:
-// 1) Create a sortOptions struct with the booleans of the list options we want.
-// 2) Create function to print sortType header
-// 3) Create closure function to get sort function typew
-// 4) Creat function to validate sort -- only one sort type possible
-// 5) Create sortFiles function that sorts files using closure function.
-// 6) Create a helper function to ensure the flags we get are bools
-
-// sort.Slice(files, func(i, j int) bool {
-// 			switch {
-// 			case byMod:
-// 				return files[i].DateModified.After(files[j].DateModified)
-// 			case byCtd:
-// 				return files[i].DateCreated.Before(files[j].DateCreated)
-// 			default:
-// 				return files[i].Name < files[j].Name
-// 			}
-// 		})
-
-// 		switch {
-// 		case byMod:
-// 			fmt.Println("Listing files by Modified Date, newest to oldest")
-// 		case byCtd:
-// 			fmt.Println("Listing files by Creation Date, newest to oldest")
-// 		default:
-// 			fmt.Println("Listing files by name")
-// 		}
