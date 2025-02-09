@@ -67,7 +67,7 @@ func (dm *DirectoryManager) confirmUserHomeDirectory() (string, error) {
 	if err != nil {
 		errMsg := fmt.Sprintf("Home directory lookup failed: %v", err)
 		dm.logger.Fail(errMsg)
-		return "", fmt.Errorf(errMsg)
+		return "", fmt.Errorf("%s", errMsg)
 	}
 
 	dm.logger.Success(fmt.Sprintf("Found home directory at: %s", userHomeDir))
@@ -84,7 +84,7 @@ func (dm *DirectoryManager) confirmNotesDirectory() (string, error) {
 	if err != nil {
 		errMsg := fmt.Sprintf("Directory creation failed: %v", err)
 		dm.logger.Fail(errMsg)
-		return "", fmt.Errorf(errMsg)
+		return "", fmt.Errorf("%s", errMsg)
 	}
 
 	dm.logger.Success(fmt.Sprintf("Notes directory ready at: %s", notesDirPath))
