@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	newListCommand := NewListCommand(root.AppLogger, root.DirManager)
+	newListCommand := NewListCommand()
 	root.RootCmd.AddCommand(newListCommand)
 
 	newListCommand.Flags().String("sort-by", "",
@@ -23,7 +23,7 @@ func init() {
 }
 
 // This will return a validated, ready-to-run list command
-func NewListCommand(logger *logger.Logger, dm *filesystem.DirectoryManager) *cobra.Command {
+func NewListCommand() *cobra.Command {
 
 	// This has methods on it that will validate and populate the fields before it's returned.
 	listCmd := &ListOptions{}
@@ -49,7 +49,7 @@ Example: notes list --sort-by modified --order newest`,
 			listCmd.SortField = SortField(sortBy)
 			listCmd.SortOrder = SortOrder(order)
 
-			return listCmd.Run(logger, dm)
+			return listCmd.Run(root.AppLogger, root.DirManager)
 		},
 	}
 	return cmd
@@ -67,7 +67,7 @@ func (opts *ListOptions) Run(logger *logger.Logger, dm *filesystem.DirectoryMana
 	notesDir := dm.NotesDir()
 
 	logger.Info("Reading notes from directory")
-	files, err := getFiles(logger, notesDir)
+	files, err := prepareNoteFiles(logger, notesDir)
 	if err != nil {
 		return fmt.Errorf("failed to get files: %w", err)
 	}
@@ -160,37 +160,56 @@ func getHeader(field SortField, order SortOrder) string {
 	return fmt.Sprintf("Sorting by %s, %s", fieldDescription, orderDescription)
 }
 
-func getFiles(logger *logger.Logger, notesDir string) ([]file.File, error) {
-	notes, err := os.ReadDir(notesDir)
+func prepareNoteFiles(logger *logger.Logger, notesDir string) ([]file.File, error) {
+	
+	logger.Start(fmt.Sprintf("Preparing notes in directory %q...", notesDir))
+
+	notes, err := readNotesDirectory(logger, notesDir)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to read directory: %v", err)
-		logger.Fail(errMsg)
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, fmt.Errorf("failed to read notes directory %q: %w", notesDir, err)
 	}
 
-	if len(notes) == 0 {
-		errMsg := "No notes found in directory"
-		logger.Info(errMsg)
-		return nil, fmt.Errorf("%s", errMsg)
+	files, err := buildFileObjects(logger, notesDir, notes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build File objects for notes in directory %q: %w", notesDir, err)
 	}
 
-	logger.Info(fmt.Sprintf("Found %d notes", len(notes)))
+	return files, nil
+}
 
+// HELPER for getFiles()
+func buildFileObjects(logger *logger.Logger, notesDir string, notes []os.DirEntry) ([]file.File, error) {
 	files := make([]file.File, 0, len(notes))
 	for _, note := range notes {
 		logger.Info(fmt.Sprintf("Processing note: %s", note.Name()))
 
 		newFile, err := file.NewFile(note.Name(), notesDir, logger)
-
-		if err != nil {
-			errMsg := fmt.Sprintf("Trouble accessing file: %v", err)
-			logger.Fail(errMsg)
-			return nil, fmt.Errorf("%s", errMsg)
-		}
+		 if err != nil {
+            logger.Fail(fmt.Sprintf("Failed to create File object for %q: %v", note.Name(), err))
+            return nil, fmt.Errorf("failed to create File object for %q: %w", note.Name(), err)
+        }
 
 		files = append(files, *newFile)
 	}
 
 	logger.Success(fmt.Sprintf("Successfully processed %d notes", len(files)))
 	return files, nil
+}
+
+// HELPER for getFiles()
+func readNotesDirectory(logger *logger.Logger, notesDir string) ([]os.DirEntry, error) {
+	notes, err := os.ReadDir(notesDir)
+	if err != nil {
+        logger.Fail(fmt.Sprintf("Failed to read notes directory %q: %v", notesDir, err))
+        return nil, fmt.Errorf("failed to read notes directory %q: %w", notesDir, err)
+    }
+
+	if len(notes) == 0 {
+		logger.Info(fmt.Sprintf("No notes found in directory %q", notesDir))
+		return nil, fmt.Errorf("no notes found in directory %q", notesDir)
+	}
+
+	logger.Info(fmt.Sprintf("Found %d notes in %q directory", len(notes), notesDir))
+
+	return notes, nil
 }
