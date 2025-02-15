@@ -16,9 +16,19 @@ func init() {
 	newListCommand := NewListCommand()
 	root.RootCmd.AddCommand(newListCommand)
 
-	newListCommand.Flags().String("sort-by", "",
+	flags := newListCommand.Flags()
+
+	flags.StringP("sort-by", "s", "",
 		fmt.Sprintf("Sort by: %s", availableSortFields()))
-	newListCommand.Flags().String("order", string(SortOrderNewest),
+
+	newListCommand.MarkFlagRequired("sort-by")
+
+	newListCommand.RegisterFlagCompletionFunc("sort-by",
+		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return strings.Split(availableSortFields(), ", "), cobra.ShellCompDirectiveNoFileComp
+		})
+
+	newListCommand.Flags().StringP("order", "o", string(SortOrderNewest),
 		fmt.Sprintf("Sort order: %s", availableSortOrders()))
 }
 
@@ -36,6 +46,10 @@ You can sort notes by creation date, modification date, or name.
 Example: notes list --sort-by modified --order newest`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
+			if len(args) > 0 {
+				return fmt.Errorf("unexpected arguments: %v\nUsage: note-app list --sort-by [created|modified|name] --order [newest|oldest]", args)
+			}
+
 			sortBy, err := cmd.Flags().GetString("sort-by")
 			if err != nil {
 				return fmt.Errorf("failed to get sort-by flag: %w", err)
@@ -52,6 +66,11 @@ Example: notes list --sort-by modified --order newest`,
 			return listCmd.Run(root.AppLogger, root.DirManager)
 		},
 	}
+
+	// No positional arguments allowed; must use flags
+	cmd.ValidArgs = []string{}
+	cmd.Args = cobra.NoArgs
+
 	return cmd
 }
 
