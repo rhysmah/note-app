@@ -12,24 +12,37 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	sortByCmd = "sort-by"
+	sortByCmdShort = "s"
+
+	orderCmd = "order"
+	orderCmdShort = "o"
+)
+
 func init() {
 	newListCommand := NewListCommand()
 	root.RootCmd.AddCommand(newListCommand)
 
 	flags := newListCommand.Flags()
 
-	flags.StringP("sort-by", "s", "",
+	// sort-by flag
+	flags.StringP(sortByCmd, sortByCmdShort, "",
 		fmt.Sprintf("Sort by: %s", availableSortFields()))
 
-	newListCommand.MarkFlagRequired("sort-by")
-
-	newListCommand.RegisterFlagCompletionFunc("sort-by",
+	newListCommand.RegisterFlagCompletionFunc(sortByCmd, 
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return strings.Split(availableSortFields(), ", "), cobra.ShellCompDirectiveNoFileComp
-		})
+	})
 
-	newListCommand.Flags().StringP("order", "o", string(SortOrderNewest),
-		fmt.Sprintf("Sort order: %s", availableSortOrders()))
+	// order flag
+	newListCommand.Flags().StringP(orderCmd, orderCmdShort, string(SortOrderNewest),
+		fmt.Sprintf("Order by: %s", availableSortOrders()))
+
+	newListCommand.RegisterFlagCompletionFunc(orderCmd, 
+		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return strings.Split(availableSortOrders(), ", "), cobra.ShellCompDirectiveNoFileComp
+	})
 }
 
 // This will return a validated, ready-to-run list command
@@ -105,6 +118,8 @@ func (opts *ListOptions) Complete() error {
 
 	if opts.SortField == "" {
 		opts.SortField = SortFieldName
+		opts.SortOrder = "" // No order when sorting name
+		return nil
 	}
 
 	if opts.SortOrder == "" && opts.SortField != SortFieldName {
@@ -119,26 +134,27 @@ func (opts *ListOptions) Complete() error {
 // to ensure those are caught and returned.
 func (opts *ListOptions) Validate() error {
 
-	// Check Sort Field -- we pass in the command provided by the user
-	// to our map; and if the user provides an invalid command, we let them know
-	if _, valid := sortFieldDescriptions[opts.SortField]; !valid {
-		return fmt.Errorf("invalid sort field selected: %q. Valid sort fields: %q", opts.SortField, availableSortFields())
+	// If SortField is Name, then no order is required; return.
+	if opts.SortField == SortFieldName {
+		return nil
 	}
 
-	// Only validate order if we're not sorting by name
-	if opts.SortField != SortFieldName {
+	// If SortField is not Name, check validity
+	if opts.SortField != "" {
+		if _, valid := sortFieldDescriptions[opts.SortField]; !valid {
+			return fmt.Errorf("invalid sort field: %q.\nValid sort fields: %q", opts.SortField, availableSortFields())
+		}
+
 		if _, valid := sortOrderDescriptions[opts.SortOrder]; !valid {
-			return fmt.Errorf("invalid sort order selected: %q. Valid sort orders: %q",
-				opts.SortOrder, availableSortOrders())
+			return fmt.Errorf("invalid sort order selected: %q. Valid sort orders: %q", opts.SortOrder, availableSortOrders())
 		}
 	}
 
 	return nil
 }
 
-// Does the actual sorting; this assumes that everything is
-// working; it has no knowledge of the previous functions,
-// of the validation.
+// Does actual sorting; assumes everything else is working; 
+// it has no knowledge of previous Complete and Validate functions.
 func (opts *ListOptions) Execute() error {
 
 	SortFiles(opts.files, opts.SortField, opts.SortOrder)
