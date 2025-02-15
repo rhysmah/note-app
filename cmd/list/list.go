@@ -161,7 +161,7 @@ func getHeader(field SortField, order SortOrder) string {
 }
 
 func prepareNoteFiles(logger *logger.Logger, notesDir string) ([]file.File, error) {
-	
+
 	logger.Start(fmt.Sprintf("Preparing notes in directory %q...", notesDir))
 
 	notes, err := readNotesDirectory(logger, notesDir)
@@ -184,10 +184,10 @@ func buildFileObjects(logger *logger.Logger, notesDir string, notes []os.DirEntr
 		logger.Info(fmt.Sprintf("Processing note: %s", note.Name()))
 
 		newFile, err := file.NewFile(note.Name(), notesDir, logger)
-		 if err != nil {
-            logger.Fail(fmt.Sprintf("Failed to create File object for %q: %v", note.Name(), err))
-            return nil, fmt.Errorf("failed to create File object for %q: %w", note.Name(), err)
-        }
+		if err != nil {
+			logger.Fail(fmt.Sprintf("Failed to create File object for %q: %v", note.Name(), err))
+			return nil, fmt.Errorf("failed to create File object for %q: %w", note.Name(), err)
+		}
 
 		files = append(files, *newFile)
 	}
@@ -200,9 +200,9 @@ func buildFileObjects(logger *logger.Logger, notesDir string, notes []os.DirEntr
 func readNotesDirectory(logger *logger.Logger, notesDir string) ([]os.DirEntry, error) {
 	notes, err := os.ReadDir(notesDir)
 	if err != nil {
-        logger.Fail(fmt.Sprintf("Failed to read notes directory %q: %v", notesDir, err))
-        return nil, fmt.Errorf("failed to read notes directory %q: %w", notesDir, err)
-    }
+		logger.Fail(fmt.Sprintf("Failed to read notes directory %q: %v", notesDir, err))
+		return nil, fmt.Errorf("failed to read notes directory %q: %w", notesDir, err)
+	}
 
 	if len(notes) == 0 {
 		logger.Info(fmt.Sprintf("No notes found in directory %q", notesDir))
