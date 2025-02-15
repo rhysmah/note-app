@@ -12,6 +12,7 @@ import (
 )
 
 const dateTimeRegexPattern = `(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})`
+
 var dateTimeRegex = regexp.MustCompile(dateTimeRegexPattern)
 
 type File struct {
@@ -22,15 +23,15 @@ type File struct {
 }
 
 func NewFile(fileName, notesDir string, logger *logger.Logger) (*File, error) {
-	
+
 	// Validation
 	if logger == nil {
-        return nil, fmt.Errorf("logger cannot be nil")
-    }
-    if fileName == "" || notesDir == "" {
-        return nil, fmt.Errorf("fileName and notesDir cannot be empty")
-    }
-	
+		return nil, fmt.Errorf("logger cannot be nil")
+	}
+	if fileName == "" || notesDir == "" {
+		return nil, fmt.Errorf("fileName and notesDir cannot be empty")
+	}
+
 	// File Creation
 	newFile := &File{
 		Name:     fileName,
@@ -70,14 +71,13 @@ func getDateCreated(filePath string, logger *logger.Logger) (time.Time, error) {
 
 	logger.Start(fmt.Sprintf("Extracting creation date from file %q", filePath))
 
-    matches := dateTimeRegex.FindStringSubmatch(filePath)
-    if len(matches) != 6 { // Original + 5 capture groups
-        return time.Time{}, fmt.Errorf("invalid filename format: %q", filePath)
-    }
+	matches := dateTimeRegex.FindStringSubmatch(filePath)
+	if len(matches) != 6 { // Original + 5 capture groups
+		return time.Time{}, fmt.Errorf("invalid filename format: %q", filePath)
+	}
 
 	return validateNoteCreatedTime(matches, logger)
 }
-
 
 // HELPERS for GetDateCreated
 func validateNoteCreatedTime(dateTimeCmp []string, logger *logger.Logger) (time.Time, error) {
