@@ -31,12 +31,10 @@ func init() {
 
 	flags := newListCommand.Flags()
 
-	// sort-by flag
 	flags.StringP(sortByCmd, sortByCmdShort, "",
 		fmt.Sprintf("Sort by: %s", availableSortFields()))
-
-	// order flag
-	newListCommand.Flags().StringP(orderCmd, orderCmdShort, string(SortOrderNewest),
+		
+	flags.StringP(orderCmd, orderCmdShort, string(SortOrderNewest),
 		fmt.Sprintf("Order by: %s", availableSortOrders()))
 }
 
@@ -96,42 +94,22 @@ func (opts *ListOptions) Run(logger *logger.Logger, dm *filesystem.DirectoryMana
 	return nil
 }
 
-// Complete sets default values for SortField and SortOrder if they are not provided.
+// Complete sets default values for sorting options.
+// If no sort field is specified, defaults to sorting by name.
+// If no order is specified for date-based sorting, defaults to newest first.
 func (opts *ListOptions) Complete() error {
 
 	if opts.SortField == "" {
 		opts.SortField = SortFieldName
-		opts.SortOrder = "" // No order when sorting name
-		return nil
-	}
-
-	if opts.SortOrder == "" && opts.SortField != SortFieldName {
-		opts.SortOrder = SortOrderNewest
+		opts.SortOrder = SortOrderAlph
 	}
 
 	return nil
 }
 
-
 func (opts *ListOptions) Validate() error {
-
-	// If SortField is Name, then no order is required; return.
-	if opts.SortField == SortFieldName {
-		return nil
-	}
-
-	// If SortField is not Name, check validity
-	if opts.SortField != "" {
-		if _, valid := sortFieldDescriptions[opts.SortField]; !valid {
-			return fmt.Errorf("invalid sort field: %q.\nValid sort fields: %q", opts.SortField, availableSortFields())
-		}
-
-		if _, valid := sortOrderDescriptions[opts.SortOrder]; !valid {
-			return fmt.Errorf("invalid sort order selected: %q. Valid sort orders: %q", opts.SortOrder, availableSortOrders())
-		}
-	}
-
-	return nil
+	v := NewValidator()
+	return v.Run(opts)
 }
 
 // Does actual sorting; assumes everything else is working;
@@ -150,6 +128,10 @@ func (opts *ListOptions) Execute() error {
 	return nil
 }
 
+// TODO: need to shorten commands for flags
+// add to Types and create function here
+// to print out full names for user.
+
 func availableSortFields() string {
 	fields := []string{
 		string(SortFieldCreated),
@@ -164,6 +146,8 @@ func availableSortOrders() string {
 	orders := []string{
 		string(SortOrderNewest),
 		string(SortOrderOldest),
+		string(SortOrderAlph),
+		string(SortOrderRAlph),
 	}
 
 	return strings.Join(orders, ", ")
