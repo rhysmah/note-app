@@ -21,10 +21,10 @@ const (
 
 	listDesc = `List all notes in your notes directory. 
 You can sort notes by creation date, modification date, or name.
-
 Example: notes list --sort-by modified --order newest`
 )
 
+// init registers the list command and its flags with the root command.
 func init() {
 	newListCommand := NewListCommand()
 	root.RootCmd.AddCommand(newListCommand)
@@ -33,12 +33,13 @@ func init() {
 
 	flags.StringP(sortByCmd, sortByCmdShort, "",
 		fmt.Sprintf("Sort by: %s", availableSortFields()))
-		
+
 	flags.StringP(orderCmd, orderCmdShort, string(SortOrderNewest),
 		fmt.Sprintf("Order by: %s", availableSortOrders()))
 }
 
-// This will return a validated, ready-to-run list command
+// NewListCommand creates and returns a new cobra.Command for the list functionality.
+// It handles listing and sorting notes based on user-specified criteria.
 func NewListCommand() *cobra.Command {
 
 	listCmd := &ListOptions{}
@@ -69,6 +70,8 @@ func NewListCommand() *cobra.Command {
 	return cmd
 }
 
+// Run executes the list command with the specified options.
+// It completes default values, validates inputs, and processes the notes.
 func (opts *ListOptions) Run(logger *logger.Logger, dm *filesystem.DirectoryManager) error {
 	if err := opts.Complete(); err != nil {
 		return fmt.Errorf("invalid options: %w", err)
@@ -95,8 +98,7 @@ func (opts *ListOptions) Run(logger *logger.Logger, dm *filesystem.DirectoryMana
 }
 
 // Complete sets default values for sorting options.
-// If no sort field is specified, defaults to sorting by name.
-// If no order is specified for date-based sorting, defaults to newest first.
+// If no sort field is specified, defaults to sorting by name in alphabetical order.
 func (opts *ListOptions) Complete() error {
 
 	if opts.SortField == "" {
@@ -107,13 +109,13 @@ func (opts *ListOptions) Complete() error {
 	return nil
 }
 
+// Validate checks if the provided options meet all validation rules.
 func (opts *ListOptions) Validate() error {
 	v := NewValidator()
 	return v.Run(opts)
 }
 
-// Does actual sorting; assumes everything else is working;
-// it has no knowledge of previous Complete and Validate functions.
+// Execute performs the note sorting and displays the results to stdout.
 func (opts *ListOptions) Execute() error {
 
 	SortFiles(opts.files, opts.SortField, opts.SortOrder)
@@ -128,20 +130,17 @@ func (opts *ListOptions) Execute() error {
 	return nil
 }
 
-// TODO: need to shorten commands for flags
-// add to Types and create function here
-// to print out full names for user.
-
+// availableSortFields returns a comma-separated string of valid sort field options.
 func availableSortFields() string {
 	fields := []string{
 		string(SortFieldCreated),
 		string(SortFieldModified),
 		string(SortFieldName),
 	}
-
 	return strings.Join(fields, ", ")
 }
 
+// availableSortOrders returns a comma-separated string of valid sort order options.
 func availableSortOrders() string {
 	orders := []string{
 		string(SortOrderNewest),
@@ -149,10 +148,10 @@ func availableSortOrders() string {
 		string(SortOrderAlph),
 		string(SortOrderRAlph),
 	}
-
 	return strings.Join(orders, ", ")
 }
 
+// getHeader returns a formatted string describing the current sort configuration.
 func getHeader(field SortField, order SortOrder) string {
 
 	fieldDescription := sortFieldDescriptions[field]
@@ -165,8 +164,14 @@ func getHeader(field SortField, order SortOrder) string {
 	return fmt.Sprintf("Sorting by %s, %s", fieldDescription, orderDescription)
 }
 
-// prepareNoteFiles reads the notes directory and builds a list of File objects.
-// It logs the process and returns the list of files or an error if any step fails.
+
+// File Operation Helpers
+// ---------------------
+// These functions handle the reading and processing of file for the list command. 
+// They are specific to this command's implementation and shouldn't be used elsewhere.
+
+// prepareNoteFiles reads and processes notes from the specified directory.
+// It returns a slice of File objects or an error if the operation fails.
 func prepareNoteFiles(logger *logger.Logger, notesDir string) ([]file.File, error) {
 	logger.Start(fmt.Sprintf("Preparing notes in directory %q...", notesDir))
 
@@ -183,7 +188,8 @@ func prepareNoteFiles(logger *logger.Logger, notesDir string) ([]file.File, erro
 	return files, nil
 }
 
-// HELPER for getFiles()
+// buildFileObjects creates File objects from directory entries.
+// It processes each note file and returns a slice of File objects.
 func buildFileObjects(logger *logger.Logger, notesDir string, notes []os.DirEntry) ([]file.File, error) {
 	files := make([]file.File, 0, len(notes))
 
@@ -203,7 +209,8 @@ func buildFileObjects(logger *logger.Logger, notesDir string, notes []os.DirEntr
 	return files, nil
 }
 
-// HELPER for getFiles()
+// readNotesDirectory reads the contents of the notes directory.
+// It returns an error if the directory is empty or cannot be read.
 func readNotesDirectory(logger *logger.Logger, notesDir string) ([]os.DirEntry, error) {
 	notes, err := os.ReadDir(notesDir)
 	if err != nil {
