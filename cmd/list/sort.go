@@ -6,9 +6,9 @@ import (
 	"github.com/rhysmah/note-app/file"
 )
 
-// SortFiles sorts a slice of files based on the specified field and order.
+// sortFiles sorts a slice of files based on the specified field and order.
 // It uses the compareFiles function to determine the ordering between any two files.
-func SortFiles(files []file.File, field SortField, order SortOrder) {
+func sortFiles(files []file.File, field SortField, order SortOrder) {
 	sort.Slice(files, func(a, b int) bool {
 		return compareFiles(files[a], files[b], field, order)
 	})

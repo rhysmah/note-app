@@ -6,30 +6,40 @@ type SortField string
 type SortOrder string
 
 const (
-	SortFieldModified SortField = "modified"
-	SortFieldCreated  SortField = "created"
+	SortFieldModified SortField = "mod"
+	SortFieldCreated  SortField = "ctd"
 	SortFieldName     SortField = "name"
 )
 
 const (
-	SortOrderNewest SortOrder = "newest"
-	SortOrderOldest SortOrder = "oldest"
-	SortOrderAlph   SortOrder = "alphabetical"
-	SortOrderRAlph  SortOrder = "reverse alphabetical"
+	SortOrderNewest SortOrder = "new"
+	SortOrderOldest SortOrder = "old"
+	SortOrderAlph   SortOrder = "alph"
+	SortOrderRAlph  SortOrder = "ralph"
 )
 
-// Map SortField types to descriptions
+const (
+	SortFieldModifiedDesc = "modification date"
+	SortFieldCreatedDesc  = "creation date"
+	SortFieldNameDesc     = "file name"
+
+	SortOrderNewestDesc = "newest to oldest"
+	SortOrderOldestDesc = "oldest to newest"
+	SortOrderAlphDesc   = "alphabetical"
+	SortOrderRAlphDesc  = "reverse alphabetical"
+)
+
 var sortFieldDescriptions = map[SortField]string{
-	SortFieldModified: "modification date",
-	SortFieldCreated:  "creation date",
-	SortFieldName:     "file name",
+	SortFieldModified: SortFieldModifiedDesc,
+	SortFieldCreated:  SortFieldCreatedDesc,
+	SortFieldName:     SortFieldNameDesc,
 }
 
 var sortOrderDescriptions = map[SortOrder]string{
-	SortOrderNewest: "newest to oldest",
-	SortOrderOldest: "oldest to newest",
-	SortOrderAlph:   "alphabetical order",
-	SortOrderRAlph:  "reverse alphabetical order",
+	SortOrderNewest: SortOrderNewestDesc,
+	SortOrderOldest: SortOrderOldestDesc,
+	SortOrderAlph:   SortOrderAlphDesc,
+	SortOrderRAlph:  SortOrderRAlphDesc,
 }
 
 type ListOptions struct {

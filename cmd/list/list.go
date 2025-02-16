@@ -34,7 +34,7 @@ func init() {
 	flags.StringP(sortByCmd, sortByCmdShort, "",
 		fmt.Sprintf("Sort by: %s", availableSortFields()))
 
-	flags.StringP(orderCmd, orderCmdShort, string(SortOrderNewest),
+	flags.StringP(orderCmd, orderCmdShort, "",
 		fmt.Sprintf("Order by: %s", availableSortOrders()))
 }
 
@@ -73,11 +73,11 @@ func NewListCommand() *cobra.Command {
 // Run executes the list command with the specified options.
 // It completes default values, validates inputs, and processes the notes.
 func (opts *ListOptions) Run(logger *logger.Logger, dm *filesystem.DirectoryManager) error {
-	if err := opts.Complete(); err != nil {
+	if err := opts.complete(); err != nil {
 		return fmt.Errorf("invalid options: %w", err)
 	}
 
-	if err := opts.Validate(); err != nil {
+	if err := opts.validate(); err != nil {
 		return fmt.Errorf("invalid options: %w", err)
 	}
 
@@ -90,16 +90,16 @@ func (opts *ListOptions) Run(logger *logger.Logger, dm *filesystem.DirectoryMana
 	}
 	opts.files = files
 
-	if err := opts.Execute(); err != nil {
+	if err := opts.execute(); err != nil {
 		return fmt.Errorf("could not execute command: %w", err)
 	}
 
 	return nil
 }
 
-// Complete sets default values for sorting options.
+// complete sets default values for sorting options.
 // If no sort field is specified, defaults to sorting by name in alphabetical order.
-func (opts *ListOptions) Complete() error {
+func (opts *ListOptions) complete() error {
 
 	if opts.SortField == "" {
 		opts.SortField = SortFieldName
@@ -109,17 +109,17 @@ func (opts *ListOptions) Complete() error {
 	return nil
 }
 
-// Validate checks if the provided options meet all validation rules.
-func (opts *ListOptions) Validate() error {
+// validate checks if the provided options meet all validation rules.
+func (opts *ListOptions) validate() error {
 	v := NewValidator()
 	return v.Run(opts)
 }
 
-// Execute performs the note sorting and displays the results to stdout.
-func (opts *ListOptions) Execute() error {
+// execute performs the note sorting and displays the results to stdout.
+func (opts *ListOptions) execute() error {
+	sortFiles(opts.files, opts.SortField, opts.SortOrder)
 
-	SortFiles(opts.files, opts.SortField, opts.SortOrder)
-
+	//TODO: Improve how files are displayed
 	fmt.Println(getHeader(opts.SortField, opts.SortOrder))
 	fmt.Println()
 
@@ -164,11 +164,11 @@ func getHeader(field SortField, order SortOrder) string {
 	return fmt.Sprintf("Sorting by %s, %s", fieldDescription, orderDescription)
 }
 
-
 // File Operation Helpers
 // ---------------------
-// These functions handle the reading and processing of file for the list command. 
+// These functions handle the reading and processing of file for the list command.
 // They are specific to this command's implementation and shouldn't be used elsewhere.
+// ---------------------
 
 // prepareNoteFiles reads and processes notes from the specified directory.
 // It returns a slice of File objects or an error if the operation fails.
