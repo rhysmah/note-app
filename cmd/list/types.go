@@ -14,6 +14,8 @@ const (
 const (
 	SortOrderNewest SortOrder = "newest"
 	SortOrderOldest SortOrder = "oldest"
+	SortOrderAlph   SortOrder = "alphabetical"
+	SortOrderRAlph  SortOrder = "reverse alphabetical"
 )
 
 // Map SortField types to descriptions
@@ -26,6 +28,8 @@ var sortFieldDescriptions = map[SortField]string{
 var sortOrderDescriptions = map[SortOrder]string{
 	SortOrderNewest: "newest to oldest",
 	SortOrderOldest: "oldest to newest",
+	SortOrderAlph:   "alphabetical order",
+	SortOrderRAlph:  "reverse alphabetical order",
 }
 
 type ListOptions struct {
