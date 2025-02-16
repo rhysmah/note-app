@@ -165,10 +165,10 @@ func getHeader(field SortField, order SortOrder) string {
 }
 
 // File Operation Helpers
-// ---------------------
+// ----------------------
 // These functions handle the reading and processing of file for the list command.
 // They are specific to this command's implementation and shouldn't be used elsewhere.
-// ---------------------
+// ---------------------- 
 
 // prepareNoteFiles reads and processes notes from the specified directory.
 // It returns a slice of File objects or an error if the operation fails.
