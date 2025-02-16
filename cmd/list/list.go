@@ -13,11 +13,16 @@ import (
 )
 
 const (
-	sortByCmd = "sort-by"
+	sortByCmd      = "sort-by"
 	sortByCmdShort = "s"
 
-	orderCmd = "order"
+	orderCmd      = "order"
 	orderCmdShort = "o"
+
+	listDesc = `List all notes in your notes directory. 
+You can sort notes by creation date, modification date, or name.
+
+Example: notes list --sort-by modified --order newest`
 )
 
 func init() {
@@ -30,38 +35,22 @@ func init() {
 	flags.StringP(sortByCmd, sortByCmdShort, "",
 		fmt.Sprintf("Sort by: %s", availableSortFields()))
 
-	newListCommand.RegisterFlagCompletionFunc(sortByCmd, 
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return strings.Split(availableSortFields(), ", "), cobra.ShellCompDirectiveNoFileComp
-	})
-
 	// order flag
 	newListCommand.Flags().StringP(orderCmd, orderCmdShort, string(SortOrderNewest),
 		fmt.Sprintf("Order by: %s", availableSortOrders()))
-
-	newListCommand.RegisterFlagCompletionFunc(orderCmd, 
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return strings.Split(availableSortOrders(), ", "), cobra.ShellCompDirectiveNoFileComp
-	})
 }
 
 // This will return a validated, ready-to-run list command
 func NewListCommand() *cobra.Command {
 
-	// This has methods on it that will validate and populate the fields before it's returned.
 	listCmd := &ListOptions{}
 
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List and sort notes",
-		Long: `List all notes in your notes directory. 
-You can sort notes by creation date, modification date, or name.
-Example: notes list --sort-by modified --order newest`,
+		Args:  cobra.NoArgs,
+		Long:  listDesc,
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			if len(args) > 0 {
-				return fmt.Errorf("unexpected arguments: %v\nUsage: note-app list --sort-by [created|modified|name] --order [newest|oldest]", args)
-			}
 
 			sortBy, err := cmd.Flags().GetString("sort-by")
 			if err != nil {
@@ -79,11 +68,6 @@ Example: notes list --sort-by modified --order newest`,
 			return listCmd.Run(root.AppLogger, root.DirManager)
 		},
 	}
-
-	// No positional arguments allowed; must use flags
-	cmd.ValidArgs = []string{}
-	cmd.Args = cobra.NoArgs
-
 	return cmd
 }
 
@@ -112,8 +96,7 @@ func (opts *ListOptions) Run(logger *logger.Logger, dm *filesystem.DirectoryMana
 	return nil
 }
 
-// Set defaults: we want to ensure that if not options are selected that
-// defaults ARE selected, so no errors occur.
+// Complete sets default values for SortField and SortOrder if they are not provided.
 func (opts *ListOptions) Complete() error {
 
 	if opts.SortField == "" {
@@ -129,9 +112,7 @@ func (opts *ListOptions) Complete() error {
 	return nil
 }
 
-// We want to validate the options selected. For example, there are
-// certain flags that only work with certain commands, so we have
-// to ensure those are caught and returned.
+
 func (opts *ListOptions) Validate() error {
 
 	// If SortField is Name, then no order is required; return.
@@ -153,7 +134,7 @@ func (opts *ListOptions) Validate() error {
 	return nil
 }
 
-// Does actual sorting; assumes everything else is working; 
+// Does actual sorting; assumes everything else is working;
 // it has no knowledge of previous Complete and Validate functions.
 func (opts *ListOptions) Execute() error {
 
@@ -175,6 +156,7 @@ func availableSortFields() string {
 		string(SortFieldModified),
 		string(SortFieldName),
 	}
+
 	return strings.Join(fields, ", ")
 }
 
@@ -183,20 +165,25 @@ func availableSortOrders() string {
 		string(SortOrderNewest),
 		string(SortOrderOldest),
 	}
+
 	return strings.Join(orders, ", ")
 }
 
 func getHeader(field SortField, order SortOrder) string {
+
 	fieldDescription := sortFieldDescriptions[field]
+
 	if field == SortFieldName {
 		return fmt.Sprintf("Sorting by %s", fieldDescription)
 	}
 	orderDescription := sortOrderDescriptions[order]
+
 	return fmt.Sprintf("Sorting by %s, %s", fieldDescription, orderDescription)
 }
 
+// prepareNoteFiles reads the notes directory and builds a list of File objects.
+// It logs the process and returns the list of files or an error if any step fails.
 func prepareNoteFiles(logger *logger.Logger, notesDir string) ([]file.File, error) {
-
 	logger.Start(fmt.Sprintf("Preparing notes in directory %q...", notesDir))
 
 	notes, err := readNotesDirectory(logger, notesDir)
@@ -215,6 +202,7 @@ func prepareNoteFiles(logger *logger.Logger, notesDir string) ([]file.File, erro
 // HELPER for getFiles()
 func buildFileObjects(logger *logger.Logger, notesDir string, notes []os.DirEntry) ([]file.File, error) {
 	files := make([]file.File, 0, len(notes))
+
 	for _, note := range notes {
 		logger.Info(fmt.Sprintf("Processing note: %s", note.Name()))
 
