@@ -15,6 +15,12 @@ func SortFiles(files []file.File, field SortField, order SortOrder) {
 func compareFiles(a, b file.File, field SortField, order SortOrder) bool {
 	switch field {
 
+	case SortFieldName:
+		if order == SortOrderAlph {
+			return a.Name < b.Name
+		}
+		return a.Name > b.Name
+
 	case SortFieldCreated:
 		if order == SortOrderNewest {
 			return a.DateCreated.After(b.DateCreated)
