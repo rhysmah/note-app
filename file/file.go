@@ -116,3 +116,67 @@ func validateNoteCreatedTime(dateTimeCmp []string, logger *logger.Logger) (time.
 
 	return creationDate, nil
 }
+
+// File Operation Helpers
+// ----------------------
+// These functions handle the reading and processing of file for the list command.
+// They are specific to this command's implementation and shouldn't be used elsewhere.
+// ----------------------
+
+// prepareNoteFiles reads and processes notes from the specified directory.
+// It returns a slice of File objects or an error if the operation fails.
+func PrepareNoteFiles(logger *logger.Logger, notesDir string) ([]File, error) {
+	logger.Start(fmt.Sprintf("Preparing notes in directory %q...", notesDir))
+
+	notes, err := ReadNotesDirectory(logger, notesDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read notes directory %q: %w", notesDir, err)
+	}
+
+	files, err := buildFileObjects(logger, notesDir, notes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build File objects for notes in directory %q: %w", notesDir, err)
+	}
+
+	return files, nil
+}
+
+// buildFileObjects creates File objects from directory entries.
+// It processes each note file and returns a slice of File objects.
+func buildFileObjects(logger *logger.Logger, notesDir string, notes []os.DirEntry) ([]File, error) {
+	files := make([]File, 0, len(notes))
+
+	for _, note := range notes {
+		logger.Info(fmt.Sprintf("Processing note: %s", note.Name()))
+
+		newFile, err := NewFile(note.Name(), notesDir, logger)
+		if err != nil {
+			logger.Fail(fmt.Sprintf("Failed to create File object for %q: %v", note.Name(), err))
+			return nil, fmt.Errorf("failed to create File object for %q: %w", note.Name(), err)
+		}
+
+		files = append(files, *newFile)
+	}
+
+	logger.Success(fmt.Sprintf("Successfully processed %d notes", len(files)))
+	return files, nil
+}
+
+// readNotesDirectory reads the contents of the notes directory.
+// It returns an error if the directory is empty or cannot be read.
+func ReadNotesDirectory(logger *logger.Logger, notesDir string) ([]os.DirEntry, error) {
+	notes, err := os.ReadDir(notesDir)
+	if err != nil {
+		logger.Fail(fmt.Sprintf("Failed to read notes directory %q: %v", notesDir, err))
+		return nil, fmt.Errorf("failed to read notes directory %q: %w", notesDir, err)
+	}
+
+	if len(notes) == 0 {
+		logger.Info(fmt.Sprintf("No notes found in directory %q", notesDir))
+		return nil, fmt.Errorf("no notes found in directory %q", notesDir)
+	}
+
+	logger.Info(fmt.Sprintf("Found %d notes in %q directory", len(notes), notesDir))
+
+	return notes, nil
+}
