@@ -1,19 +1,15 @@
 package list
 
-import "fmt"
+import (
+	"fmt"
 
-// ValidationRule defines a function that validates a specific aspect of ListOptions.
-type ValidationRule func(*ListOptions) error
-
-// validator contains a collection of validation rules to be executed.
-type validator struct {
-	rules []ValidationRule
-}
+	"github.com/rhysmah/note-app/validator"
+)
 
 // NewValidator creates a validator with a predefined set of validation rules.
-func NewValidator() *validator {
-	return &validator{
-		rules: []ValidationRule{
+func NewValidator() *validator.Validator[ListOptions] {
+	return &validator.Validator[ListOptions]{
+		Rules: []validator.ValidationRule[ListOptions]{
 			validateSortFieldExists,
 			validateDateSortOrder,
 			validateNameSortOrder,
@@ -21,16 +17,6 @@ func NewValidator() *validator {
 			validateOrderField,
 		},
 	}
-}
-
-// Run executes all validation rules in sequence, returning the first error encountered.
-func (v *validator) Run(opts *ListOptions) error {
-	for _, rule := range v.rules {
-		if err := rule(opts); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 // validateSortFieldExists checks if a sort field has been specified.
