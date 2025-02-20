@@ -10,8 +10,10 @@ import (
 )
 
 var (
-	AppLogger  *logger.Logger
-	DirManager *filesystem.DirectoryManager
+	AppLogger      *logger.Logger
+	DirManager     *filesystem.DirectoryManager
+	UserDirectory  string
+	NotesDirectory string
 )
 
 var RootCmd = &cobra.Command{
@@ -27,7 +29,7 @@ var RootCmd = &cobra.Command{
 
 		DirManager, err = filesystem.NewDirectoryManager(AppLogger)
 		if err != nil {
-			fmt.Printf("Home directory operation failed: %v", err)
+			fmt.Printf("Failed to initialize logger: %v", err)
 			os.Exit(1)
 		}
 	},
