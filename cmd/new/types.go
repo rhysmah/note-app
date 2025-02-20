@@ -1,6 +1,6 @@
 package new
 
-type NewOptions struct{
+type NewOptions struct {
 	noteName string
-	noteDir string	
+	notesDir string
 }
