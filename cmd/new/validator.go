@@ -9,8 +9,8 @@ import (
 )
 
 func NewValidator() *validator.Validator[NewOptions] {
-	return &validator.Validator[NewOptions] {
-		Rules: []validator.ValidationRule[NewOptions] {
+	return &validator.Validator[NewOptions]{
+		Rules: []validator.ValidationRule[NewOptions]{
 			validateNoteName,
 		},
 	}
