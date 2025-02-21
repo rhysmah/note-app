@@ -162,6 +162,5 @@ func (l *Logger) CloseCurrentLogFile() error {
 		l.currentLogFile = nil
 		return err
 	}
-
 	return nil
 }

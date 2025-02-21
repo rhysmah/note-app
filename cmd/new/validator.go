@@ -1,6 +1,7 @@
 package new
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -24,7 +25,7 @@ func validateNoteName(opts *NewOptions) error {
 	if len(noteNameTrimmed) > noteNameCharLimit {
 		errMsg := fmt.Sprintf("name exceeds %d character limit", noteNameCharLimit)
 		root.AppLogger.Fail(errMsg)
-		return fmt.Errorf(errMsg)
+		return errors.New(errMsg)
 	}
 
 	if err := checkForIllegalCharacters(noteNameTrimmed); err != nil {
@@ -47,7 +48,7 @@ func checkForIllegalCharacters(noteName string) error {
 	if len(illegalCharsFound) > 0 {
 		errMsg := fmt.Sprintf("name contains illegal characters: %q", string(illegalCharsFound))
 		root.AppLogger.Fail(errMsg)
-		return fmt.Errorf(errMsg)
+		return errors.New(errMsg)
 	}
 
 	return nil

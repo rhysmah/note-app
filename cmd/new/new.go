@@ -1,6 +1,7 @@
 package new
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -78,7 +79,7 @@ func createAndSaveNote(noteName, notesDirPath string) error {
 	if _, err := os.Stat(notePath); err == nil {
 		errMsg := fmt.Sprintf("note %q already exists", fullNoteName)
 		root.AppLogger.Fail(errMsg)
-		return fmt.Errorf(errMsg)
+		return errors.New(errMsg)
 	}
 
 	// Create note
@@ -86,7 +87,7 @@ func createAndSaveNote(noteName, notesDirPath string) error {
 	if err != nil {
 		errMsg := fmt.Sprintf("failed to create file: %v", err)
 		root.AppLogger.Fail(errMsg)
-		return fmt.Errorf(errMsg)
+		return errors.New(errMsg)
 	}
 	defer file.Close()
 
