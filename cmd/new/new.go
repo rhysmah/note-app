@@ -18,7 +18,7 @@ const (
 )
 
 const (
-	createCmd      = "create"
+	createCmdFull  = "create"
 	createCmdShort = "c"
 	createCmdDesc  = `Create a new note with the specified name.
 The note will be saved as '[note-name]_[date].txt' in your notes directory.
@@ -31,20 +31,20 @@ func init() {
 }
 
 func NewCreateCommand() *cobra.Command {
-	newCmd := &NewOptions{}
+	createCmd := &NewOptions{}
 
 	cmd := &cobra.Command{
-		Use:   createCmd,
+		Use:   createCmdFull,
 		Short: createCmdShort,
 		Long:  createCmdDesc,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root.AppLogger.Start(fmt.Sprintf("Creating new note with name: '%s'", args[0]))
 
-			newCmd.notesDir = root.DirManager.NotesDir()
-			newCmd.noteName = args[0]
+			createCmd.notesDir = root.DirManager.NotesDir()
+			createCmd.noteName = args[0]
 
-			if err := createNote(newCmd); err != nil {
+			if err := createNote(createCmd); err != nil {
 				fmt.Printf("Error creating note: %v", err)
 				return err
 			}
