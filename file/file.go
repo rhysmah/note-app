@@ -1,6 +1,7 @@
 package file
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -61,7 +62,7 @@ func getDateModified(filePath string, logger *logger.Logger) (time.Time, error) 
 	if err != nil {
 		errMsg := fmt.Sprintf("error accessing file info: %v", err)
 		logger.Fail(errMsg)
-		return time.Time{}, fmt.Errorf(errMsg)
+		return time.Time{}, errors.New(errMsg)
 	}
 
 	return fileInfo.ModTime(), nil
